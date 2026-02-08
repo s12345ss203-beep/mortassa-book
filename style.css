@@ -1,0 +1,348 @@
+:root {
+    /* Color Palette */
+    --bg-color: #0d1117;
+    --card-bg: #161b22;
+    --text-primary: #c9d1d9;
+    --text-secondary: #8b949e;
+    --accent: #58a6ff;
+    --accent-hover: #1f6feb;
+    --border-color: #30363d;
+    --status-done: #238636;
+    --status-pending: #8b949e;
+
+    /* Layout */
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius: 12px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Utils */
+.hidden {
+    display: none;
+}
+
+/* Hero Section */
+.hero {
+    padding: 100px 0 60px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    background: linear-gradient(90deg, #fff, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Categories */
+.categories-section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.category-filters {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cat-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.cat-btn:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.cat-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+/* Book Grid */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 30px;
+    padding-bottom: 100px;
+}
+
+.book-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.book-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-color: var(--accent);
+}
+
+.book-card img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+}
+
+.book-info {
+    padding: 15px;
+}
+
+.book-info h3 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.book-info p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Book Details View */
+#book-details-view {
+    padding-top: 50px;
+    min-height: 100vh;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+}
+
+.back-btn:hover {
+    padding-left: 5px;
+}
+
+.details-container {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 40px;
+    border: 1px solid var(--border-color);
+}
+
+.details-header {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.details-cover {
+    width: 250px;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.details-meta {
+    flex: 1;
+}
+
+.details-meta h1 {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+}
+
+.details-meta h2 {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-bottom: 25px;
+}
+
+.badges {
+    display: flex;
+    gap: 10px;
+}
+
+.badge {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.cat-badge {
+    background: rgba(88, 166, 255, 0.1);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+}
+
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    border: 1px solid;
+}
+
+.status-badge.finished {
+    background: rgba(35, 134, 54, 0.1);
+    color: #3fb950;
+    border-color: #238636;
+}
+
+.status-badge.reading {
+    background: rgba(210, 153, 34, 0.1);
+    color: #d29922;
+    border-color: #bb8009;
+}
+
+.status-badge.not_finished {
+    background: rgba(248, 81, 73, 0.1);
+    color: #f85149;
+    border-color: #da3633;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 30px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    position: relative;
+    transition: var(--transition);
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--accent);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+}
+
+.tab-content {
+    display: none;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    animation: fadeIn 0.4s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-content ul {
+    list-style-position: inside;
+}
+
+.tab-content li {
+    margin-bottom: 15px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-in {
+    animation: fadeIn 0.6s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .details-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+
+    .details-cover {
+        width: 100%;
+        max-width: 200px;
+    }
+
+    .tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}

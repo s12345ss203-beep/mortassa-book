@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكتبتي الشخصية | Virtual Reading Library</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specific Font for Arabic support */
+        body {
+            font-family: 'Noto Kufi Arabic', 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Main View Section -->
+    <main id="main-view">
+        <header class="hero">
+            <div class="container">
+                <h1>رحلتي مع الكتب</h1>
+                <p>مرحباً بك في مكتبتي المتواضعة. هنا أجمع خلاصة قراءاتي، كتبي المفضلة، والأفكار التي استوقفتني في رحلتي
+                    بين السطور.</p>
+            </div>
+        </header>
+
+        <section class="categories-section">
+            <div class="container">
+                <h2 class="section-title">الأصناف</h2>
+                <div class="category-filters" id="category-filters">
+                    <button class="cat-btn active" data-category="All">الكل</button>
+                    <button class="cat-btn" data-category="Psychology">علم نفس</button>
+                    <button class="cat-btn" data-category="Philosophy">فلسفة</button>
+                    <button class="cat-btn" data-category="Literature">أدب</button>
+                    <button class="cat-btn" data-category="History">تاريخ</button>
+                    <button class="cat-btn" data-category="Religion">دين</button>
+                    <button class="cat-btn" data-category="Self Development">تطوير ذات</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="books-section">
+            <div class="container">
+                <div class="book-grid" id="book-grid">
+                    <!-- Books will be injected here by JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Details View Section -->
+    <section id="book-details-view" class="hidden">
+        <!-- Content will be injected here by JS -->
+    </section>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
