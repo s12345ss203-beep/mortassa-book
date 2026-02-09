@@ -51,6 +51,7 @@ body {
     margin-bottom: 20px;
     background: linear-gradient(90deg, #fff, var(--accent));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -126,9 +127,17 @@ body {
 
 .book-card img {
     width: 100%;
-    aspect-ratio: 2/3;
+    aspect-ratio: 2 / 3;
     object-fit: cover;
     display: block;
+    background-color: #1c2128;
+    /* Lightweight placeholder color */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.book-card img[src] {
+    opacity: 1;
 }
 
 .book-info {
@@ -186,8 +195,11 @@ body {
 
 .details-cover {
     width: 250px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
     border-radius: var(--radius);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    background-color: #1c2128;
 }
 
 .details-meta {

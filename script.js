@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'book-card';
             card.innerHTML = `
-                <img src="${book.cover}" alt="${book.title}" loading="lazy">
+                <img src="${book.cover}" alt="${book.title}" loading="lazy" decoding="async" width="200" height="300">
                 <div class="book-info">
                     <h3>${book.title}</h3>
                     <p>${book.author}</p>
@@ -429,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="back-btn" id="back-to-list">← Back to Library</button>
                 <div class="details-container">
                     <div class="details-header">
-                        <img src="${book.cover}" alt="${book.title}" class="details-cover">
+                        <img src="${book.cover}" alt="${book.title}" class="details-cover" loading="lazy" decoding="async" width="250" height="375">
                         <div class="details-meta">
                             <h1>${book.title}</h1>
                             <h2>${book.author}</h2>
