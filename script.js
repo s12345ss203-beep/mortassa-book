@@ -5,7 +5,7 @@ const booksData = [
         author: "فيودور دوستويفسكي",
         category: "Literature",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215433.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215433.jpg",
         summary: "مجموعة قصصية قصيرة تستعرض ببراعة الجوانب النفسية والاجتماعية للشخصيات بأسلوب ساخر وذكي.",
         importantIdeas: [
             "الصراع النفسي الداخلي",
@@ -20,7 +20,7 @@ const booksData = [
         author: "آلان وباربرا بيز",
         category: "Psychology",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215409.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215409.jpg",
         summary: "دليل شامل لفهم الإشارات غير اللفظية التي يرسلها الأشخاص في المواقف الرومانسية والاجتماعية.",
         importantIdeas: [
             "تفسير حركات العيون واليدين",
@@ -35,7 +35,7 @@ const booksData = [
         author: "علي الوردي",
         category: "Philosophy",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215354.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215354.jpg",
         summary: "دراسة اجتماعية نفسية عميقة تتناول طبيعة النفس البشرية وتأثير اللاوعي على سلوكيات الأفراد والمجتمعات.",
         importantIdeas: [
             "تأثير العقل الباطن على القرارات",
@@ -50,7 +50,7 @@ const booksData = [
         author: "إميلي رولز & كارولين ريجوز",
         category: "Psychology",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215333.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215333.jpg",
         summary: "كتاب مبسط يستعرض أهم المفاهيم والنظريات في علم النفس بأسلوب سهل ومناسب لغير المتخصصين.",
         importantIdeas: [
             "أساسيات السلوك البشري",
@@ -65,7 +65,7 @@ const booksData = [
         author: "علي الوردي",
         category: "Philosophy",
         status: "not_finished",
-        cover: "صور الكتب/IMG_20260206_215326.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215326.jpg",
         summary: "كتاب نقدي يتناول الأنماط الفكرية والاجتماعية السائدة في المجتمع بجرأة وعمق فلسفي.",
         importantIdeas: [
             "نقد الجمود الفكري",
@@ -80,7 +80,7 @@ const booksData = [
         author: "توم باتلر-باودون",
         category: "Psychology",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215318.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215318.jpg",
         summary: "مجموعة من الملخصات لأهم الكتب في تاريخ علم النفس، توفر نظرة بانورامية واسعة لهذا العلم.",
         importantIdeas: [
             "تطور التفكير النفسي عبر العصور",
@@ -95,7 +95,7 @@ const booksData = [
         author: "آرثر شوبنهاور",
         category: "Philosophy",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215309.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215309.jpg",
         summary: "رسالة فكاهية وجدلية يشرح فيها شوبنهاور كيف يمكن للمرء أن ينتصر في أي جدال بغض النظر عن الحقيقة.",
         importantIdeas: [
             "المغالطات المنطقية وكيفية استخدامها",
@@ -110,7 +110,7 @@ const booksData = [
         author: "محمد إبراهيم",
         category: "Self Development",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215302.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215302.jpg",
         summary: "كتاب يتناول قضايا الصحة النفسية بأسلوب بسيط وقريب من القارئ، كأنها جلسات حوارية.",
         importantIdeas: [
             "التعامل مع القلق والاكتئاب",
@@ -124,7 +124,7 @@ const booksData = [
         author: "علي الوردي",
         category: "History",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215251.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215251.jpg",
         summary: "كتاب يحلل الدور الاجتماعي لرجال الدين في التاريخ الإسلامي وعلاقتهم بالسلطة.",
         importantIdeas: [
             "الصراع الاجتماعي والتاريخي",
@@ -138,7 +138,7 @@ const booksData = [
         author: "ديمي لوفاتو",
         category: "Self Development",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215234.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215234.jpg",
         summary: "مجموعة من الاقتباسات والأفكار اليومية التي تهدف إلى تقديم الدعم والتحفيز الذاتي.",
         importantIdeas: [
             "أهمية الرعاية الذاتية",
@@ -152,7 +152,7 @@ const booksData = [
         author: "أحمد خالد مصطفى",
         category: "Literature",
         status: "not_finished",
-        cover: "صور الكتب/IMG_20260206_215224.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215224.jpg",
         summary: "رواية تأخذ القارئ في رحلة خيالية وتاريخية لاستكشاف عوالم سفلية وجوانب خفية من التاريخ البشري.",
         importantIdeas: [
             "الإبحار في عوالم الجريمة والخفاء",
@@ -167,7 +167,7 @@ const booksData = [
         author: "Hunter Biden",
         category: "Literature",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215212.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215212.jpg",
         summary: "Hunter Biden's memoir offers a candid and unflinching look into his life, primarily focusing on his decades-long struggle with addiction, grief, and the road to recovery.",
         importantIdeas: [
             "The journey towards sobriety and persistence",
@@ -182,7 +182,7 @@ const booksData = [
         author: "Arthur Miller",
         category: "Literature",
         status: "not_finished",
-        cover: "صور الكتب/IMG_20260206_215201.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215201.jpg",
         summary: "A landmark production and play that revolutionized theater through its innovative use of stage directions and themes.",
         importantIdeas: [
             "The breakdown of the American Dream",
@@ -197,7 +197,7 @@ const booksData = [
         author: "Samuel Beckett",
         category: "Literature",
         status: "not_finished",
-        cover: "صور الكتب/IMG_20260206_215148.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215148.jpg",
         summary: "A seminal play of the Theatre of the Absurd, where two characters, Vladimir and Estragon, wait endlessly for a mysterious figure named Godot who never arrives.",
         importantIdeas: [
             "The absurdity and meaninglessness of existence",
@@ -212,7 +212,7 @@ const booksData = [
         author: "السيد محمد محمد صادق الصدر",
         category: "Religion",
         status: "not_finished",
-        cover: "صور الكتب/IMG_20260206_215725.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215725.jpg",
         summary: "رسالة فقهية عملية مختصره تتناول أحكام العبادات والمعاملات، وتضم فتاوى السيد محمد محمد صادق الصدر.",
         importantIdeas: [
             "توضيح أحكام الاجتهاد والتقليد",
@@ -227,7 +227,7 @@ const booksData = [
         author: "جعفر عباس حميدي",
         category: "History",
         status: "not_finished",
-        cover: "صور الكتب/IMG_20260206_221252.jpg",
+        cover: "صور%20الكتب/IMG_20260206_221252.jpg",
         summary: "دراسة شاملة لتاريخ العراق الحديث، تغطي التحولات السياسية والاجتماعية من الحرب العالمية الأولى حتى عام 1968.",
         importantIdeas: [
             "تأسيس الدولة العراقية الحديثة ونظام الحكم",
@@ -242,7 +242,7 @@ const booksData = [
         author: "أريج الحسيني",
         category: "Self Development",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_221243.jpg",
+        cover: "صور%20الكتب/IMG_20260206_221243.jpg",
         summary: "كتاب يتناول سبل تحقيق السعادة الحقيقية في الحياة من خلال الرضا النفسي وتطوير الذات والتفاؤل.",
         importantIdeas: [
             "مفهوم السعادة الحقيقية والرضا النفسي",
@@ -257,7 +257,7 @@ const booksData = [
         author: "السيد محمد محمد صادق الصدر",
         category: "Religion",
         status: "not_finished",
-        cover: "صور الكتب/IMG_20260206_215711.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215711.jpg",
         summary: "مجموعة من المسائل الفقهية والردود عليها، تتناول قضايا معاصرة وعبادية تهم المكلفين في حياتهم اليومية.",
         importantIdeas: [
             "إجابات على أسئلة المكلفين المعاصرة",
@@ -272,7 +272,7 @@ const booksData = [
         author: "عارف القصبي السعيد",
         category: "History",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215702.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215702.jpg",
         summary: "دراسة تتناول جوانب العظمة في شخصية الإمام علي بن أبي طالب من الناحية الأخلاقية والسياسية والقيادية والعلمية.",
         importantIdeas: [
             "القيم الأخلاقية الرفيعة في سيرة الإمام علي",
@@ -287,7 +287,7 @@ const booksData = [
         author: "أدولف هتلر",
         category: "History",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215628.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215628.jpg",
         summary: "السيرة الذاتية لأدولف هتلر التي تشرح أفكاره الأيديولوجية والسياسية وتاريخ الحركة النازية في ألمانيا.",
         importantIdeas: [
             "تحليل تاريخي للوضع السياسي بعد الحرب العالمية الأولى",
@@ -302,7 +302,7 @@ const booksData = [
         author: "الشيخ الصدوق",
         category: "Religion",
         status: "not_finished",
-        cover: "صور الكتب/IMG_20260206_215542.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215542.jpg",
         summary: "كتاب يجمع الأحاديث التي تشرح الأسباب والحكم من وراء الأحكام الشرعية والفرائض.",
         importantIdeas: [
             "الفلسفة وراء العبادات",
@@ -317,7 +317,7 @@ const booksData = [
         author: "سكوت ليلينفيلد وآخرون",
         category: "Psychology",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215529.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215529.jpg",
         summary: "كتاب علمي يفند المفاهيم الخاطئة الشائعة في علم النفس الشعبي بالاعتماد على الأدلة التجريبية.",
         importantIdeas: [
             "تفنيد خرافة الـ 10% من العقل",
@@ -332,7 +332,7 @@ const booksData = [
         author: "ليندا ل. دافيدوف",
         category: "Psychology",
         status: "not_finished",
-        cover: "صور الكتب/IMG_20260206_215514.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215514.jpg",
         summary: "كتاب مرجعي شامل يتناول المبادئ الأساسية لعلم النفس بأسلوب أكاديمي منظم.",
         importantIdeas: [
             "العمليات المعرفية والإدراكية",
@@ -347,7 +347,7 @@ const booksData = [
         author: "ديفيد غوغينز",
         category: "Self Development",
         status: "finished",
-        cover: "صور الكتب/IMG_20260206_215448.jpg",
+        cover: "صور%20الكتب/IMG_20260206_215448.jpg",
         summary: "قصة ملهمة حول قوة الإرادة والقدرة الكامنة في الإنسان لتجاوز أقسى الظروف الجسدية والنفسية.",
         importantIdeas: [
             "قاعدة الـ 40% وتجاوز الحدود الذهنية",
