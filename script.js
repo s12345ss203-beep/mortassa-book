@@ -379,8 +379,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const bookDetailsView = document.getElementById('book-details-view');
     const mainView = document.getElementById('main-view');
 
-    // Initial render
-    renderBooks('All');
+    // Initial render - Show nothing or just a message (User wants no books visible initially)
+    // renderBooks('All'); // Removed this to prevent initial visibility
+    bookGrid.innerHTML = '<div class="placeholder-text">يرجى اختيار صنف لعرض الكتب</div>';
+
 
     // Category Filtering
     categoryButtons.forEach(btn => {
@@ -401,12 +403,24 @@ document.addEventListener('DOMContentLoaded', () => {
             ? booksData
             : booksData.filter(book => book.category === category);
 
+        if (filteredBooks.length === 0 && category !== 'All') {
+            bookGrid.innerHTML = '<p class="no-books">لا توجد كتب في هذا الصنف حالياً.</p>';
+            return;
+        }
+
         filteredBooks.forEach(book => {
             const status = statusConfig[book.status] || statusConfig.not_finished;
             const card = document.createElement('div');
-            card.className = 'book-card';
+            card.className = 'book-card skeleton'; // Start with skeleton class
             card.innerHTML = `
-                <img src="${book.cover}" alt="${book.title}" loading="lazy" decoding="async" width="200" height="300">
+                <div class="image-container">
+                    <img src="${book.cover}" 
+                         alt="${book.title}" 
+                         loading="lazy" 
+                         decoding="async" 
+                         width="400" 
+                         onload="this.parentElement.parentElement.classList.remove('skeleton')">
+                </div>
                 <div class="book-info">
                     <h3>${book.title}</h3>
                     <p>${book.author}</p>
@@ -418,6 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
     function showDetails(book) {
         const status = statusConfig[book.status] || statusConfig.not_finished;
         mainView.classList.add('hidden');
@@ -426,8 +441,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         bookDetailsView.innerHTML = `
             <div class="container animate-in">
-                <button class="back-btn" id="back-to-list">← Back to Library</button>
+                <button class="back-btn" id="back-to-list"><span>&rarr;</span> العودة للمكتبة</button>
                 <div class="details-container">
+
                     <div class="details-header">
                         <img src="${book.cover}" alt="${book.title}" class="details-cover" loading="lazy" decoding="async" width="250" height="375">
                         <div class="details-meta">
