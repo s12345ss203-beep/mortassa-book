@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبتي الشخصية | Virtual Reading Library</title>
+    <title>منصة مرتضى للقراءة | Virtual Reading Platform</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,54 +12,186 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Specific Font for Arabic support */
-        body {
-            font-family: 'Noto Kufi Arabic', 'Inter', sans-serif;
-        }
-    </style>
 </head>
 
 <body>
 
-    <!-- Main View Section -->
-    <main id="main-view">
-        <header class="hero">
-            <div class="container">
-                <h1>رحلتي مع الكتب</h1>
-                <p>مرحباً بك في مكتبتي المتواضعة. هنا أجمع خلاصة قراءاتي، كتبي المفضلة، والأفكار التي استوقفتني في رحلتي
-                    بين السطور.</p>
-            </div>
-        </header>
+    <!-- Intro Screen (Auth Redesign) -->
+    <section id="intro-screen" class="full-screen-intro hidden">
+        <div class="intro-content animate-in">
+            <h1>منصة مرتضى للقراءة</h1>
+            <p>مرحباً بك في عالم المعرفة. اختر كيف تود البدء اليوم:</p>
 
-        <section class="categories-section">
-            <div class="container">
-                <h2 class="section-title">الأصناف</h2>
-                <div class="category-filters" id="category-filters">
-                    <button class="cat-btn active" data-category="All">الكل</button>
-                    <button class="cat-btn" data-category="Psychology">علم نفس</button>
-                    <button class="cat-btn" data-category="Philosophy">فلسفة</button>
-                    <button class="cat-btn" data-category="Literature">أدب</button>
-                    <button class="cat-btn" data-category="History">تاريخ</button>
-                    <button class="cat-btn" data-category="Religion">دين</button>
+            <!-- Step 1: Initial Selection -->
+            <div id="auth-selection" class="auth-box">
+                <button id="show-auth-form" class="primary-btn">تسجيل الدخول / إنشاء حساب</button>
+                <div class="divider">أو</div>
+                <button id="guest-login" class="secondary-btn">الدخول كضيف</button>
+            </div>
+
+            <!-- Step 2: Auth Form (Initially Hidden) -->
+            <div id="auth-form-container" class="auth-box hidden">
+                <div class="input-group">
+                    <input type="text" id="reg-username" placeholder="اسم المستخدم (مطلوب)" required>
+                    <input type="password" id="reg-password" placeholder="كلمة المرور (مطلوب)" required>
+
+                    <div class="persona-select-container">
+                        <label for="persona-select"
+                            style="display:block; margin-bottom:5px; font-size:0.9rem; color:var(--text-secondary);">اختر
+                            شخصيتك الأدبية (اختياري)</label>
+                        <select id="persona-select">
+                            <option value="">-- بدون شخصية --</option>
+                            <!-- Options injected by JS -->
+                        </select>
+                    </div>
                 </div>
+                <button id="submit-auth" class="primary-btn">ابدأ الرحلة</button>
+                <button id="back-to-selection" class="text-btn"
+                    style="background:none; border:none; color:var(--text-secondary); margin-top:15px; cursor:pointer;">&larr;
+                    العودة للخلف</button>
             </div>
-        </section>
-
-        <section class="books-section">
-            <div class="container">
-                <div class="book-grid" id="book-grid">
-                    <!-- Books will be injected here by JS -->
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Details View Section -->
-    <section id="book-details-view" class="hidden">
-        <!-- Content will be injected here by JS -->
+        </div>
     </section>
 
+    <nav id="main-nav" class="hidden">
+        <div class="container nav-container">
+            <div class="nav-right">
+                <a href="#" class="nav-link active" data-view="home">الرئيسية</a>
+                <a href="#" class="nav-link" data-view="library">المكتبة العامة</a>
+                <a href="#" class="nav-link" data-view="novels">الروايات</a>
+                <a href="#" class="nav-link" data-view="ideas">أفكار عامة</a>
+                <a href="#" class="nav-link" data-view="stories">قصص</a>
+            </div>
+            <div class="nav-left">
+                <a href="#" class="nav-link" data-view="privateLibrary">مكتبتي الخاصة</a>
+                <div id="nav-user-info">
+                    <!-- User info injected here -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Platform Views -->
+    <main id="main-view">
+        <!-- Home/Dashboard View -->
+        <section id="home-view" class="view-container hidden"></section>
+
+        <!-- Public Library View -->
+        <section id="library-view" class="view-container hidden">
+            <div class="container">
+                <h2 class="section-title">المكتبة العامة</h2>
+                <div class="category-filters" id="library-filters">
+                    <!-- Filters injected by JS -->
+                </div>
+                <div class="book-grid" id="book-grid">
+                    <!-- Books injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- My Private Library View -->
+        <section id="private-library-view" class="view-container hidden">
+            <div class="container">
+                <h2 class="section-title">مكتبتي الخاصة</h2>
+                <div class="book-grid" id="my-library-grid">
+                    <p class="placeholder-content">لا توجد كتب محفوظة بعد</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- General Ideas -->
+        <section id="ideas-view" class="view-container hidden">
+            <div class="container">
+                <h2 class="section-title">أفكار عامة</h2>
+                <div class="placeholder-wrapper">
+                    <p class="placeholder-content">قريباً... مساحة لنقاش الأفكار العامة.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stories (Phase 2 Placeholder) -->
+        <section id="stories-view" class="view-container hidden">
+            <div class="container">
+                <h2 class="section-title">قصص</h2>
+                <div class="placeholder-wrapper">
+                    <p class="placeholder-content">قريباً... مجموعة من القصص الممتعة.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Novels View -->
+        <section id="novels-view" class="view-container hidden">
+            <div class="container">
+                <h2 class="section-title">قسم الروايات</h2>
+                <div class="placeholder-wrapper">
+                    <p class="placeholder-content">قريباً... مجموعة مختارة من أفضل الروايات العالمية والعربية.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community (Phase 4 Placeholder) -->
+        <section id="community-view" class="view-container hidden">
+            <div class="container">
+                <h2 class="section-title">المجتمع</h2>
+                <div class="placeholder-wrapper">
+                    <p class="placeholder-content">قريباً... مساحة للنقاش والتفاعل مع القراء الآخرين.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Details View -->
+        <section id="book-details-view" class="view-container hidden"></section>
+    </main>
+
+    <!-- Comment Bottom Panel (Redesigned) -->
+    <div id="comment-panel-overlay" class="panel-overlay hidden" onclick="ui.closeCommentPanel()"></div>
+    <div id="comment-panel" class="bottom-panel hidden">
+        <div class="panel-header">
+            <div class="panel-drag-handle"></div>
+            <button class="close-panel-btn" onclick="ui.closeCommentPanel()">&times;</button>
+        </div>
+        <div id="comment-panel-content" class="panel-content">
+            <!-- Content injected by JS -->
+        </div>
+    </div>
+
+    <!-- Profile Sidebar (New) -->
+    <div id="profile-overlay" class="overlay hidden"></div>
+    <aside id="profile-sidebar" class="sidebar hidden">
+        <div class="sidebar-header">
+            <button id="close-profile" class="close-btn">&times;</button>
+        </div>
+        <div id="profile-content">
+            <!-- Content injected by JS -->
+        </div>
+    </aside>
+
+    <!-- Add Book Modal (Placeholder) -->
+    <div id="add-book-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <button id="close-modal" class="close-modal-btn">&times;</button>
+            <div class="modal-header">
+                <h2>إضافة كتاب جديد</h2>
+                <p>هذه الواجهة قيد التطوير حالياً.</p>
+            </div>
+            <div class="modal-body">
+                <div class="placeholder-content">
+                    <p>قريباً... ستتمكن من إضافة كتبك الخاصة لمكتبتك.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="primary-btn" id="modal-confirm">فهمت</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Floating Add Button (Library View) -->
+    <button id="floating-add-btn" class="library-floating-btn hidden">
+        <span class="btn-icon">+</span>
+        <span class="btn-text">إضافة كتاب</span>
+    </button>
+
+    <!-- Scripts -->
     <script src="script.js"></script>
 </body>
 
