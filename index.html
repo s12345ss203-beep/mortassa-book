@@ -143,17 +143,6 @@
         <section id="book-details-view" class="view-container hidden"></section>
     </main>
 
-    <!-- Comment Bottom Panel (Redesigned) -->
-    <div id="comment-panel-overlay" class="panel-overlay hidden" onclick="ui.closeCommentPanel()"></div>
-    <div id="comment-panel" class="bottom-panel hidden">
-        <div class="panel-header">
-            <div class="panel-drag-handle"></div>
-            <button class="close-panel-btn" onclick="ui.closeCommentPanel()">&times;</button>
-        </div>
-        <div id="comment-panel-content" class="panel-content">
-            <!-- Content injected by JS -->
-        </div>
-    </div>
 
     <!-- Profile Sidebar (New) -->
     <div id="profile-overlay" class="overlay hidden"></div>
@@ -166,30 +155,97 @@
         </div>
     </aside>
 
-    <!-- Add Book Modal (Placeholder) -->
+    <!-- Add Content Modal (Advanced) -->
     <div id="add-book-modal" class="modal-overlay hidden">
-        <div class="modal-content glass-panel">
+        <div class="modal-content glass-panel add-content-modal">
             <button id="close-modal" class="close-modal-btn">&times;</button>
             <div class="modal-header">
-                <h2>إضافة كتاب جديد</h2>
-                <p>هذه الواجهة قيد التطوير حالياً.</p>
+                <h2 id="modal-title">إضافة محتوى جديد</h2>
+                <div id="modal-type-indicator" class="type-indicator"></div>
             </div>
-            <div class="modal-body">
-                <div class="placeholder-content">
-                    <p>قريباً... ستتمكن من إضافة كتبك الخاصة لمكتبتك.</p>
+
+            <form id="add-content-form" class="modal-body">
+                <!-- Group: Titles and Comments (Novels/Stories) -->
+                <div id="group-title-comment" class="form-group-container hidden">
+                    <div class="input-field">
+                        <label for="content-title">عنوان العمل</label>
+                        <input type="text" id="content-title" placeholder="أدخل عنوان الرواية أو القصة...">
+                    </div>
+                    <div class="input-field">
+                        <label for="content-comment-literary">رأيك الشخصي / تعليق</label>
+                        <textarea id="content-comment-literary" placeholder="ما هو انطباعك الأول؟"></textarea>
+                    </div>
                 </div>
-            </div>
+
+                <!-- Group: Books (Summary, Ideas, Opinion) -->
+                <div id="group-book-details" class="form-group-container hidden">
+                    <div class="input-field">
+                        <label for="book-summary">ملخص الكتاب</label>
+                        <textarea id="book-summary" placeholder="اكتب ملخصاً وافياً لمحور الكتاب..."></textarea>
+                    </div>
+                    <div class="input-field">
+                        <label for="book-ideas">أهم الأفكار</label>
+                        <textarea id="book-ideas" placeholder="ما هي النقاط الارتكازية التي خرجت بها؟"></textarea>
+                    </div>
+                    <div class="input-field">
+                        <label for="book-opinion">رأيك الشخصي</label>
+                        <textarea id="book-opinion" placeholder="كيف تقيم هذا العمل من وجهة نظرك؟"></textarea>
+                    </div>
+
+                    <div class="status-selection">
+                        <span class="label">حالة القراءة:</span>
+                        <div class="status-toggles">
+                            <button type="button" class="status-tag finished" data-status="finished">
+                                <span>تمت قراءته</span>
+                            </button>
+                            <button type="button" class="status-tag reading active" data-status="reading">
+                                <span>لم اقراءة</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="upload-section">
+                        <label class="upload-label">
+                            <input type="file" id="book-cover-input" accept="image/*" hidden>
+                            <div class="upload-placeholder" id="upload-preview">
+                                <div class="upload-icon">📸</div>
+                                <span>تحميل غلاف الكتاب</span>
+                            </div>
+                        </label>
+                        <div class="upload-notes">
+                            <p>⚠️ ملاحظات هامة:</p>
+                            <ul>
+                                <li>يجب أن تظهر الصورة غلاف الكتاب فقط.</li>
+                                <li>يجب أن تكون الصورة واضحة وبجودة عالية.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group: General Ideas -->
+                <div id="group-general-idea" class="form-group-container hidden">
+                    <div class="input-field">
+                        <label for="idea-text">نص الفكرة</label>
+                        <textarea id="idea-text" placeholder="ما الذي يدور في ذهنك؟"></textarea>
+                    </div>
+                </div>
+            </form>
+
             <div class="modal-footer">
-                <button class="primary-btn" id="modal-confirm">فهمت</button>
+                <button class="primary-btn" id="modal-confirm">حفظ وإضافة</button>
             </div>
         </div>
     </div>
-
-    <!-- Premium Floating Add Button (Library View) -->
-    <button id="floating-add-btn" class="library-floating-btn hidden">
-        <span class="btn-icon">+</span>
-        <span class="btn-text">إضافة كتاب</span>
-    </button>
+    <!-- Rewritten Global FAB System (Premium Refactor) -->
+    <div class="fab-wrapper hidden" id="global-fab-wrapper">
+        <div class="fab-menu">
+            <div data-action="add-book">إضافة كتاب</div>
+            <div data-action="add-novel">إضافة رواية</div>
+            <div data-action="add-story">إضافة قصة</div>
+            <div data-action="add-idea">إضافة فكرة عامة</div>
+        </div>
+        <button class="fab">+</button>
+    </div>
 
     <!-- Scripts -->
     <script src="script.js"></script>

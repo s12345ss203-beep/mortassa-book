@@ -297,6 +297,34 @@ const auth = {
     }
 };
 
+// --- 2.1 PREMIUM ICONS (SVG) ---
+const icons = {
+    heart: `
+        <svg class="premium-icon" viewBox="0 0 24 24">
+            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+        </svg>`,
+    message: `
+        <svg class="premium-icon" viewBox="0 0 24 24">
+            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+        </svg>`,
+    trash: `
+        <svg class="premium-icon" viewBox="0 0 24 24">
+            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>`,
+    plus: `
+        <svg class="premium-icon" viewBox="0 0 24 24">
+            <path d="M12 4v16m8-8H4"></path>
+        </svg>`,
+    chevronLeft: `
+        <svg class="premium-icon" viewBox="0 0 24 24">
+            <path d="M15 19l-7-7 7-7"></path>
+        </svg>`,
+    dislike: `
+        <svg class="premium-icon" viewBox="0 0 24 24">
+            <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22L1.14 11.27c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.37-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"></path>
+        </svg>`
+};
+
 // --- 3. UI LOGIC ---
 const ui = {
     views: {},
@@ -372,19 +400,8 @@ const ui = {
         if (viewName === 'novels') this.renderNovels();
         if (viewName === 'privateLibrary') this.renderMyLibrary();
 
-        // Manage floating add button visibility
-        const floatBtn = document.getElementById('floating-add-btn');
-        if (floatBtn) {
-            if (viewName === 'library') {
-                floatBtn.classList.remove('hidden');
-                floatBtn.classList.add('visible');
-            } else {
-                floatBtn.classList.remove('visible');
-                setTimeout(() => {
-                    if (!floatBtn.classList.contains('visible')) floatBtn.classList.add('hidden');
-                }, 400); // Matches CSS transition
-            }
-        }
+        this.updateFABVisibility();
+
 
         // Restore scroll and ensure visibility
         document.body.style.overflow = '';
@@ -427,7 +444,7 @@ const ui = {
     renderIdeas: function () {
         const container = this.views.ideas;
         const displayData = this.getIdeasForPreview();
-        this.renderInteractionView(container, displayData, "أفكار عامة", true);
+        this.renderLiteraryList(container, displayData, "أفكار عامة", "ideas");
     },
 
     getStoriesForPreview: function () {
@@ -478,7 +495,7 @@ const ui = {
     renderStories: function () {
         const container = this.views.stories;
         const displayData = this.getStoriesForPreview();
-        this.renderInteractionView(container, displayData, "قصص", true);
+        this.renderLiteraryList(container, displayData, "قصص", "stories");
     },
 
     getNovelsForPreview: function () {
@@ -519,171 +536,211 @@ const ui = {
     renderNovels: function () {
         const container = this.views.novels;
         const displayData = this.getNovelsForPreview();
-        this.renderInteractionView(container, displayData, "روايات", true);
+        this.renderLiteraryList(container, displayData, "روايات", "novels");
     },
 
-    renderInteractionView: function (container, data, title, hasComments) {
+    renderLiteraryList: function (container, data, title, type) {
         container.innerHTML = `
             <div class="container animate-fade-down">
                 <h2 class="section-title">${title}</h2>
-                <div class="interaction-grid">
+                <div class="story-list">
                     ${data.map(item => {
             const currentUser = auth.getCurrentUser();
             const isAuthor = currentUser && item.authorId === currentUser.id;
 
             return `
-                        <div class="interaction-card glass-panel" data-id="${item.id}">
-                            <div class="card-header">
-                                <h3 class="card-title">${item.title}</h3>
-                                <div class="card-meta">
-                                    <div class="user-info">
-                                        <span class="card-author">${item.author}</span>
-                                        <span class="card-date">${item.date || item.timestamp || ''}</span>
-                                    </div>
+                        <div class="story-row" data-id="${item.id}">
+                            ${isAuthor ? `
+                                <button class="delete-interaction-btn" title="حذف" onclick="ui.deleteInteraction('${item.id}', '${title}')" style="display: flex;">
+                                    ${icons.trash}
+                                </button>
+                            ` : ''}
+                            <div class="story-header">
+                                <h2 class="story-title">${item.title}</h2>
+                                <div class="story-meta">
+                                    <span class="story-author">${item.author}</span>
+                                    <span class="meta-dot">•</span>
+                                    <span class="story-date">${item.date || '18 فبراير 2026'}</span>
                                 </div>
-                                ${isAuthor ? `
-                                    <button class="delete-interaction-btn" title="حذف" onclick="ui.deleteInteraction('${item.id}', '${title}')">
-                                        🗑️
-                                    </button>
-                                ` : ''}
                             </div>
-                            ${item.content ? `<div class="card-body"><p>${item.content}</p></div>` : ''}
-                            <div class="card-footer">
-                                <div class="footer-actions">
-                                    <button class="action-btn like-btn" onclick="ui.handleInteraction('${item.id}', 'like')">
-                                        <span class="icon">👍</span>
-                                        <span class="count">${item.likes}</span>
-                                    </button>
-                                    ${hasComments ? `
-                                        <button class="action-btn dislike-btn" onclick="ui.handleInteraction('${item.id}', 'dislike')">
-                                            <span class="icon">👎</span>
-                                            <span class="count">${item.dislikes}</span>
-                                        </button>
-                                    ` : ''}
+                            <div class="story-content">
+                                <p>${item.content}</p>
+                            </div>
+                            <div class="story-footer">
+                                <button class="action-btn like-btn" onclick="ui.handleInteraction('${item.id}', 'like', this)">
+                                    ${icons.heart}
+                                    <span class="count">${item.likes}</span>
+                                </button>
+                                <button class="action-btn dislike-btn" onclick="ui.handleInteraction('${item.id}', 'dislike', this)">
+                                    ${icons.dislike}
+                                    <span class="count">${item.dislikes}</span>
+                                </button>
+                                <button class="action-btn comment-btn" onclick="ui.toggleInlineComments('${item.id}', '${type}')">
+                                    ${icons.message}
+                                    <span class="count">${item.commentCount || (item.comments ? item.comments.length : 0)}</span>
+                                </button>
+                            </div>
+                            
+                            <div id="inline-comments-${item.id}" class="inline-comments-section">
+                                <div class="comment-input-area-literary">
+                                    <div class="profile-circle-placeholder"></div>
+                                    <textarea placeholder="اكتب تعليقك..." id="input-${item.id}" 
+                                              onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); ui.addInlineComment('${item.id}', '${type}'); }"></textarea>
                                 </div>
-                                ${hasComments ? `
-                                    <button class="comment-float-indicator" title="التعليقات" onclick="ui.openCommentPanel('${item.id}')">
-                                        <span class="chat-icon">💬</span>
-                                        <span class="comment-count">${item.commentCount || (item.comments ? item.comments.length : 0)}</span>
-                                    </button>
-                                ` : ''}
+                                <div class="inline-comments-list" id="comments-list-${item.id}">
+                                    <!-- Comments will be loaded here -->
+                                </div>
                             </div>
                         </div>
-                    `}).join('')}
+                    `;
+        }).join('')}
                 </div>
             </div>
         `;
     },
 
-    handleInteraction: function (id, type) {
-        // Mocking logic for like/dislike
-        console.log(`Interaction: ${type} on item ${id}`);
-        // In a real app, we would update the data and re-render
-    },
+    toggleInlineComments: function (id, type) {
+        const section = document.getElementById(`inline-comments-${id}`);
+        if (!section) return;
 
-    deleteInteraction: function (id, type) {
-        // Find card element
-        const card = document.querySelector(`.interaction-card[data-id="${id}"]`);
-        if (card) {
-            card.classList.add('fade-out');
-            setTimeout(() => {
-                card.remove();
-                console.log(`Deleted ${type} item: ${id}`);
-                // If it were real data, we would filter storiesData/ideasData here
-            }, 300);
+        const isExpanded = section.classList.contains('expanded');
+
+        // Close others? For now just toggle this one
+        section.classList.toggle('expanded');
+
+        if (!isExpanded) {
+            this.renderInlineComments(id, type);
         }
     },
 
-    openCommentPanel: function (id) {
-        // Safe retrieval from preview helpers
-        const allItems = [
-            ...this.getStoriesForPreview(),
-            ...this.getIdeasForPreview(),
-            ...this.getNovelsForPreview()
-        ];
-        const item = allItems.find(i => i.id === id);
+    renderInlineComments: function (id, type) {
+        const listContainer = document.getElementById(`comments-list-${id}`);
+        if (!listContainer) return;
 
-        if (!item) {
-            console.warn(`UI: Item with ID ${id} not found in preview data.`);
+        // Find the item in data
+        let item = null;
+        if (type === 'stories') item = storiesData.find(s => s.id === id) || this.getStoriesForPreview().find(s => s.id === id);
+        else if (type === 'novels') item = novelsData.find(s => s.id === id) || this.getNovelsForPreview().find(s => s.id === id);
+        else if (type === 'ideas') item = ideasData.find(s => s.id === id) || this.getIdeasForPreview().find(s => s.id === id);
+
+        const comments = item ? (item.comments || []) : [];
+        const currentUser = auth.getCurrentUser();
+
+        if (comments.length === 0) {
+            listContainer.innerHTML = '<p class="no-comments" style="font-size: 0.9rem; opacity: 0.6; text-align: center; padding: 20px;">لا توجد تعليقات بعد. كن أول من يضيف انطباعاً!</p>';
             return;
         }
 
-        const panel = document.getElementById('comment-panel');
-        const overlay = document.getElementById('comment-panel-overlay');
-        const content = document.getElementById('comment-panel-content');
-        const currentUser = auth.getCurrentUser();
-
-        content.innerHTML = `
-            <div class="panel-inner-header">
-                <h3>${item.title}</h3>
-            </div>
-            <div class="comments-list">
-                ${item.comments && item.comments.length > 0 ? item.comments.map(c => `
-                    <div class="comment-item" id="comment-${c.id}">
-                        <div class="comment-header">
-                            <span class="comment-user">${c.author}</span>
-                            <div class="header-right">
-                                <span class="comment-time">${c.date || c.timestamp}</span>
-                                ${c.authorId === currentUser.id ? `<button class="delete-comment-btn" onclick="ui.deleteComment('${item.id}', '${c.id}')">🗑️</button>` : ''}
-                            </div>
-                        </div>
-                        <div class="comment-body">${c.text}</div>
-                        <div class="comment-footer">
-                            <button class="comment-action like" onclick="ui.handleCommentInteraction('${c.id}', 'like')">👍 ${c.likes}</button>
-                            <button class="comment-action dislike" onclick="ui.handleCommentInteraction('${c.id}', 'dislike')">👎 ${c.dislikes}</button>
-                        </div>
+        listContainer.innerHTML = comments.map(c => `
+            <div class="literary-comment-item" id="comment-${c.id}">
+                <div class="literary-comment-header">
+                    <div class="comment-user-meta">
+                        <span class="comment-user">${c.user || c.author}</span>
+                        <span class="separator">•</span>
+                        <span class="comment-time">${c.date || c.timestamp || 'الآن'}</span>
                     </div>
-                `).join('') : '<p class="no-comments">لا توجد تعليقات بعد.</p>'}
+                    ${(currentUser && (c.user === currentUser.username || c.author === currentUser.username || c.authorId === currentUser.id)) ? `
+                        <button class="delete-comment-btn" title="حذف" onclick="ui.deleteComment('${id}', '${c.id}', '${type}')">
+                            ${icons.trash}
+                        </button>
+                    ` : ''}
+                </div>
+                <div class="literary-comment-body">${c.text}</div>
             </div>
-            <div class="comment-input-area">
-                <textarea placeholder="اكتب تعليقك هنا..." id="new-comment-text"></textarea>
-                <button class="submit-comment-btn" onclick="ui.addComment('${item.id}')">إرسال</button>
-            </div>
-        `;
-
-        overlay.classList.remove('hidden');
-        panel.classList.remove('hidden');
-        setTimeout(() => {
-            overlay.classList.add('visible');
-            panel.classList.add('visible');
-        }, 10);
+        `).join('');
     },
 
-    closeCommentPanel: function () {
-        const panel = document.getElementById('comment-panel');
-        const overlay = document.getElementById('comment-panel-overlay');
+    deleteComment: function (itemId, commentId, type) {
+        // Confirm before delete
+        if (!confirm("هل أنت متأكد من حذف هذا التعليق؟")) return;
 
-        panel.classList.remove('visible');
-        overlay.classList.remove('visible');
+        let item = null;
+        if (type === 'stories') item = storiesData.find(s => s.id === itemId);
+        else if (type === 'novels') item = novelsData.find(s => s.id === itemId);
+        else if (type === 'ideas') item = ideasData.find(s => s.id === itemId);
 
-        setTimeout(() => {
-            panel.classList.add('hidden');
-            overlay.classList.add('hidden');
-        }, 350);
+        if (item && item.comments) {
+            const commentEl = document.getElementById(`comment-${commentId}`);
+            if (commentEl) {
+                commentEl.classList.add('fade-out');
+                setTimeout(() => {
+                    item.comments = item.comments.filter(c => String(c.id) !== String(commentId));
+                    item.commentCount = Math.max(0, (item.commentCount || 0) - 1);
+
+                    this.renderInlineComments(itemId, type);
+
+                    // Update count in footer
+                    const row = document.querySelector(`.story-row[data-id="${itemId}"]`);
+                    if (row) {
+                        const countSpan = row.querySelector('.story-footer .count');
+                        if (countSpan) countSpan.textContent = item.commentCount;
+                    }
+                }, 300);
+            }
+        }
     },
 
-    deleteComment: function (itemId, commentId) {
-        const commentEl = document.getElementById(`comment-${commentId}`);
-        if (commentEl) {
-            commentEl.classList.add('fade-out');
+    addInlineComment: function (id, type) {
+        const textarea = document.getElementById(`input-${id}`);
+        const text = textarea.value.trim();
+        if (!text) return;
+
+        const user = auth.getCurrentUser();
+        if (!user) {
+            alert("يرجى تسجيل الدخول للتعليق");
+            return;
+        }
+
+        // Logic to add comment
+        let item = null;
+        if (type === 'stories') item = storiesData.find(s => s.id === id);
+        else if (type === 'novels') item = novelsData.find(s => s.id === id);
+        else if (type === 'ideas') item = ideasData.find(s => s.id === id);
+
+        if (item) {
+            if (!item.comments) item.comments = [];
+            item.comments.push({
+                id: Date.now(),
+                user: user.username,
+                text: text,
+                date: "الآن"
+            });
+            item.commentCount = (item.commentCount || 0) + 1;
+
+            textarea.value = '';
+            this.renderInlineComments(id, type);
+            // Re-render count in footer
+            const row = document.querySelector(`.story-row[data-id="${id}"]`);
+            if (row) {
+                const countSpan = row.querySelector('.story-footer .count');
+                if (countSpan) countSpan.textContent = item.commentCount;
+            }
+        } else {
+            alert("لا يمكن التعليق على البيانات التجريبية (Demo)");
+        }
+    },
+
+
+    handleInteraction: function (id, type, btn) {
+        console.log(`Interaction: ${type} on item ${id}`);
+        if (btn) {
+            btn.classList.toggle('active');
+            // Re-render logic would go here
+        }
+    },
+
+    deleteInteraction: function (id, type) {
+        // Find row or card element
+        const element = document.querySelector(`.story-row[data-id="${id}"], .interaction-card[data-id="${id}"]`);
+        if (element) {
+            element.classList.add('fade-out');
             setTimeout(() => {
-                commentEl.remove();
-                console.log(`Comment ${commentId} deleted from ${itemId}`);
+                element.remove();
+                console.log(`Deleted ${type} item: ${id}`);
             }, 300);
         }
     },
 
-    addComment: function (itemId) {
-        const text = document.getElementById('new-comment-text').value.trim();
-        if (text) {
-            console.log(`Add comment to ${itemId}: ${text}`);
-            this.closeCommentPanel();
-        }
-    },
-
-    handleCommentInteraction: function (commentId, type) {
-        console.log(`Comment interaction: ${type} on ${commentId}`);
-    },
 
     closeNotice: function (id) {
         const banner = document.getElementById(id);
@@ -746,8 +803,13 @@ const ui = {
         if (closeBtn) closeBtn.onclick = () => toggleSidebar(false);
         if (overlay) overlay.onclick = () => toggleSidebar(false);
 
-        const myLibLink = document.querySelector('a[data-view="privateLibrary"]');
-        if (myLibLink) myLibLink.style.display = user.isGuest ? 'none' : 'block';
+        const savedBtn = this.nav.querySelector('[data-view="privateLibrary"]');
+        if (savedBtn) {
+            if (user && !user.isGuest) savedBtn.style.display = 'block';
+            else savedBtn.style.display = 'none';
+        }
+
+        this.updateFABVisibility();
     },
 
     renderSidebarContent: function (user, container) {
@@ -933,14 +995,7 @@ const ui = {
             title.insertAdjacentElement('afterend', actionArea);
         }
 
-        actionArea.innerHTML = `
-            <button class="library-add-btn" id="add-book-library">
-                <span>➕</span>
-                <span>إضافة كتاب جديد</span>
-            </button>
-        `;
-
-        document.getElementById('add-book-library').onclick = () => this.openAddBookModal();
+        actionArea.innerHTML = ''; // Removed legacy add button
 
         if (saved.length === 0) {
             grid.innerHTML = '<p class="no-books">لم تضف أي كتب بعد.</p>';
@@ -949,33 +1004,166 @@ const ui = {
         }
     },
 
-    openAddBookModal: function () {
-        const modal = document.getElementById('add-book-modal');
-        if (modal) modal.classList.remove('hidden');
+
+
+    initNewFAB: function () {
+        const menuItems = document.querySelectorAll('.fab-menu div');
+        menuItems.forEach(item => {
+            item.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const action = item.dataset.action;
+                this.openAddContentModal(action);
+            };
+        });
+        this.updateFABVisibility();
     },
 
-    initAddBookModal: function () {
+    updateFABVisibility: function () {
+        const fab = document.getElementById('global-fab-wrapper');
+        if (!fab) return;
+
+        const user = auth.getCurrentUser();
+        const currentView = Object.keys(this.views).find(k => !this.views[k].classList.contains('hidden'));
+
+        if (user && currentView !== 'intro') {
+            fab.classList.remove('hidden');
+        } else {
+            fab.classList.add('hidden');
+        }
+    },
+
+    openAddContentModal: function (type) {
         const modal = document.getElementById('add-book-modal');
-        const floatBtn = document.getElementById('floating-add-btn');
-        const closeBtn = document.getElementById('close-modal');
-        const confirmBtn = document.getElementById('modal-confirm');
-        if (floatBtn) floatBtn.onclick = (e) => {
-            this.createRipple(e, floatBtn);
-            this.openAddBookModal();
+        if (!modal) return;
+
+        const titleMap = {
+            'add-book': 'إضافة كتاب جديد',
+            'add-novel': 'إضافة رواية جديدة',
+            'add-story': 'إضافة قصة جديدة',
+            'add-idea': 'إضافة فكرة عامة'
         };
 
+        const typeLabelMap = {
+            'add-book': 'كتاب',
+            'add-novel': 'رواية',
+            'add-story': 'قصة',
+            'add-idea': 'فكرة'
+        };
+
+        // Reset and Update UI
+        document.getElementById('modal-title').innerText = titleMap[type] || 'إضافة محتوى';
+        document.getElementById('modal-type-indicator').innerText = typeLabelMap[type] || '';
+        document.getElementById('add-content-form').reset();
+        document.getElementById('upload-preview').innerHTML = '<div class="upload-icon">📸</div><span>تحميل غلاف الكتاب</span>';
+        this.currentAddType = type;
+
+        // Hide all groups, show relevant one
+        document.querySelectorAll('.form-group-container').forEach(g => g.classList.add('hidden'));
+
+        if (type === 'add-novel' || type === 'add-story') {
+            document.getElementById('group-title-comment').classList.remove('hidden');
+        } else if (type === 'add-book') {
+            document.getElementById('group-book-details').classList.remove('hidden');
+        } else if (type === 'add-idea') {
+            document.getElementById('group-general-idea').classList.remove('hidden');
+        }
+
+        modal.classList.remove('hidden');
+    },
+
+    initModals: function () {
+        const modal = document.getElementById('add-book-modal');
+        if (!modal) return;
+
         const closeModal = () => modal.classList.add('hidden');
+        const closeBtn = document.getElementById('close-modal');
+        const confirmBtn = document.getElementById('modal-confirm');
+        const form = document.getElementById('add-content-form');
 
         if (closeBtn) closeBtn.onclick = closeModal;
-        if (confirmBtn) confirmBtn.onclick = closeModal;
+        modal.onclick = (e) => {
+            if (e.target === modal) closeModal();
+        };
 
-        // Close on clicking overlay
-        if (modal) {
-            modal.onclick = (e) => {
-                if (e.target === modal) closeModal();
+        // Image Preview Logic
+        const imageInput = document.getElementById('book-cover-input');
+        const preview = document.getElementById('upload-preview');
+        if (imageInput && preview) {
+            imageInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (re) => {
+                        preview.innerHTML = `<img src="${re.target.result}" class="upload-preview-img">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+        }
+
+        // Status Toggle Logic
+        const statusBtns = document.querySelectorAll('.status-tag');
+        statusBtns.forEach(btn => {
+            btn.onclick = () => {
+                statusBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            };
+        });
+
+        // Submission Logic
+        if (confirmBtn) {
+            confirmBtn.onclick = (e) => {
+                this.createRipple(e, confirmBtn);
+                this.handleContentSubmission();
             };
         }
     },
+
+    handleContentSubmission: function () {
+        const type = this.currentAddType;
+        let data = {};
+        let isValid = false;
+
+        if (type === 'add-novel' || type === 'add-story') {
+            const title = document.getElementById('content-title').value.trim();
+            const comment = document.getElementById('content-comment-literary').value.trim();
+            if (title && comment) {
+                data = { title, comment, type: type === 'add-novel' ? 'novel' : 'story' };
+                isValid = true;
+            }
+        } else if (type === 'add-book') {
+            const summary = document.getElementById('book-summary').value.trim();
+            const ideas = document.getElementById('book-ideas').value.trim();
+            const opinion = document.getElementById('book-opinion').value.trim();
+            const status = document.querySelector('.status-tag.active').dataset.status;
+            const hasImage = document.getElementById('book-cover-input').files.length > 0;
+
+            if (summary && ideas && opinion && hasImage) {
+                data = { summary, ideas, opinion, status };
+                isValid = true;
+            } else if (!hasImage) {
+                alert("يرجى تحميل غلاف الكتاب للمتابعة.");
+                return;
+            }
+        } else if (type === 'add-idea') {
+            const text = document.getElementById('idea-text').value.trim();
+            if (text) {
+                data = { text };
+                isValid = true;
+            }
+        }
+
+        if (isValid) {
+            console.log("Adding content:", data);
+            alert("تم إرسال المحتوى بنجاح! سيتم مراجعته وإضافته قريباً.");
+            document.getElementById('add-book-modal').classList.add('hidden');
+        } else {
+            alert("يرجى ملء كافة الحقول المطلوبة.");
+        }
+    },
+
 
     renderGrid: function (gridId, category, customData = null, sort = 'newest') {
         const grid = document.getElementById(gridId);
@@ -1051,21 +1239,23 @@ const ui = {
                                 <span class="status-badge ${status.class}">${status.text}</span>
                             </div>
 
-                            ${!user.isGuest ? `
-                                <button class="save-btn ${isSaved ? 'saved' : ''}" id="toggle-save">
-                                    <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                    <span>${isSaved ? 'موجود في المفضلات' : 'إضافة إلى المفضلات'}</span>
-                                </button>
-                            ` : ''}
-                            
-                            <div class="interaction-bar">
-                                <button class="like-btn" id="like-btn" data-id="${book.id}">
-                                    <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
-                                    <span class="like-count" id="like-count">0</span>
-                                </button>
-                                <button class="dislike-btn" id="dislike-btn" data-id="${book.id}">
-                                    <svg viewBox="0 0 24 24"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.37-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
-                                </button>
+                            <div class="details-actions">
+                                ${!user.isGuest ? `
+                                    <button class="save-btn ${isSaved ? 'saved' : ''}" id="toggle-save">
+                                        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                        <span>${isSaved ? 'موجود في المفضلات' : 'إضافة إلى المفضلات'}</span>
+                                    </button>
+                                ` : ''}
+                                
+                                <div class="interaction-bar">
+                                    <button class="like-btn" id="like-btn" data-id="${book.id}">
+                                        <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+                                        <span class="like-count" id="like-count">0</span>
+                                    </button>
+                                    <button class="dislike-btn" id="dislike-btn" data-id="${book.id}">
+                                        <svg viewBox="0 0 24 24"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.37-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1153,22 +1343,19 @@ const ui = {
 
 // --- 4. INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("Platform: DOM Loaded. Initializing app...");
-
     try {
         ui.init();
 
         // Auth check
         const user = auth.getCurrentUser();
         if (user) {
-            console.log("Platform: User authenticated:", user.username);
             ui.updateNavbar();
-            ui.initAddBookModal(); // Initialize modal listeners
+            ui.initNewFAB();
+            ui.initModals();
             ui.switchView('home');
             // Ensure nav state on reload
             if (window.scrollY > 20) ui.nav.classList.add('scrolled');
         } else {
-            console.log("Platform: No user session. Showing intro.");
             ui.switchView('intro');
         }
 
