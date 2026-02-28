@@ -1066,6 +1066,9 @@ const ui = {
             document.getElementById('group-title-comment').classList.remove('hidden');
         } else if (type === 'add-book') {
             document.getElementById('group-book-details').classList.remove('hidden');
+            // Ensure initial visibility matches the active status button
+            const activeStatus = document.querySelector('.status-tag.active')?.dataset.status || 'reading';
+            this.updateBookFieldsVisibility(activeStatus);
         } else if (type === 'add-idea') {
             document.getElementById('group-general-idea').classList.remove('hidden');
         }
@@ -1109,6 +1112,7 @@ const ui = {
             btn.onclick = () => {
                 statusBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                this.updateBookFieldsVisibility(btn.dataset.status);
             };
         });
 
@@ -1119,6 +1123,25 @@ const ui = {
                 this.handleContentSubmission();
             };
         }
+    },
+
+    updateBookFieldsVisibility: function (status) {
+        const fieldsToToggle = ['book-summary', 'book-ideas', 'book-opinion'];
+        const isFinished = status === 'finished';
+
+        fieldsToToggle.forEach(id => {
+            const field = document.getElementById(id);
+            if (field) {
+                const container = field.closest('.input-field');
+                if (container) {
+                    if (isFinished) {
+                        container.classList.remove('hidden');
+                    } else {
+                        container.classList.add('hidden');
+                    }
+                }
+            }
+        });
     },
 
     handleContentSubmission: function () {
@@ -1140,12 +1163,23 @@ const ui = {
             const status = document.querySelector('.status-tag.active').dataset.status;
             const hasImage = document.getElementById('book-cover-input').files.length > 0;
 
-            if (summary && ideas && opinion && hasImage) {
-                data = { summary, ideas, opinion, status };
-                isValid = true;
-            } else if (!hasImage) {
-                alert("يرجى تحميل غلاف الكتاب للمتابعة.");
-                return;
+            if (status === 'finished') {
+                if (summary && ideas && opinion && hasImage) {
+                    data = { summary, ideas, opinion, status };
+                    isValid = true;
+                } else if (!hasImage) {
+                    alert("يرجى تحميل غلاف الكتاب للمتابعة.");
+                    return;
+                }
+            } else {
+                // Not finished, these fields are optional/hidden
+                if (hasImage) {
+                    data = { status };
+                    isValid = true;
+                } else {
+                    alert("يرجى تحميل غلاف الكتاب للمتابعة.");
+                    return;
+                }
             }
         } else if (type === 'add-idea') {
             const text = document.getElementById('idea-text').value.trim();
@@ -1259,14 +1293,16 @@ const ui = {
                             </div>
                         </div>
                     </div>
-                    <div class="tabs">
-                        <button class="tab-btn active" data-tab="summary">تلخيص</button>
-                        <button class="tab-btn" data-tab="ideas">أفكار</button>
-                        <button class="tab-btn" data-tab="comment">رأي</button>
-                    </div>
-                    <div class="tab-content active" id="tab-summary"><p>${book.summary}</p></div>
-                    <div class="tab-content" id="tab-ideas"><ul>${book.importantIdeas.map(i => `<li>${i}</li>`).join('')}</ul></div>
-                    <div class="tab-content" id="tab-comment"><p>${book.comment}</p></div>
+                    ${book.status === 'finished' ? `
+                        <div class="tabs">
+                            <button class="tab-btn active" data-tab="summary">تلخيص</button>
+                            <button class="tab-btn" data-tab="ideas">أفكار</button>
+                            <button class="tab-btn" data-tab="comment">رأي</button>
+                        </div>
+                        <div class="tab-content active" id="tab-summary"><p>${book.summary}</p></div>
+                        <div class="tab-content" id="tab-ideas"><ul>${book.importantIdeas.map(i => `<li>${i}</li>`).join('')}</ul></div>
+                        <div class="tab-content" id="tab-comment"><p>${book.comment}</p></div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -1342,10 +1378,221 @@ const ui = {
 };
 
 // --- 4. INITIALIZATION ---
+
+// --- 4. SAAS SEARCH SYSTEM LOGIC ---
+const searchEngine = {
+    debounceTimer: null,
+    history: JSON.parse(localStorage.getItem('search_history') || '[]'),
+
+    init: function () {
+        const input = document.getElementById('library-search-input');
+        const suggestions = document.getElementById('search-suggestions');
+        const clearBtn = document.getElementById('clear-search-btn');
+
+        if (!input) return;
+
+        input.oninput = () => {
+            clearTimeout(this.debounceTimer);
+            const query = input.value;
+            this.debounceTimer = setTimeout(() => this.performSearch(query), 300);
+            this.showSuggestions(query);
+        };
+
+        input.onfocus = () => {
+            if (!input.value && this.history.length > 0) {
+                this.showHistory();
+            }
+        };
+
+        // Close suggestions on outside click
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                suggestions.classList.add('hidden');
+            }
+        });
+
+
+        this.selectedIndex = -1;
+
+        input.onkeydown = (e) => {
+            const items = suggestions.querySelectorAll('.suggestion-item');
+            if (suggestions.classList.contains('hidden') || items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                this.selectedIndex = (this.selectedIndex + 1) % items.length;
+                this.updateSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                this.selectedIndex = (this.selectedIndex - 1 + items.length) % items.length;
+                this.updateSelection(items);
+            } else if (e.key === 'Enter') {
+                if (this.selectedIndex > -1) {
+                    e.preventDefault();
+                    items[this.selectedIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                suggestions.classList.add('hidden');
+            }
+        };
+
+        if (clearBtn) {
+            clearBtn.onclick = () => {
+                input.value = '';
+                this.performSearch('');
+            };
+        }
+    },
+
+    updateSelection: function (items) {
+        items.forEach((item, index) => {
+            if (index === this.selectedIndex) {
+                item.classList.add('selected');
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    },
+
+    normalizeText: function (text) {
+        if (!text) return '';
+        return text.toLowerCase()
+            .replace(/[إأآا]/g, 'ا')
+            .replace(/[ىي]/g, 'ي')
+            .replace(/[ةه]/g, 'ه')
+            .replace(/[^\w\s\u0621-\u064A]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    },
+
+    performSearch: function (query) {
+        const normalizedQuery = this.normalizeText(query);
+        const grid = document.getElementById('book-grid');
+        const cards = grid.querySelectorAll('.book-card');
+        const emptyState = document.getElementById('search-empty-state');
+        const counter = document.getElementById('search-counter');
+
+        if (!normalizedQuery) {
+            cards.forEach(card => {
+                card.classList.remove('search-hidden');
+                // Reset highlighting
+                const titleEl = card.querySelector('h3');
+                const authorEl = card.querySelector('p');
+                titleEl.innerHTML = titleEl.innerText;
+                authorEl.innerHTML = authorEl.innerText;
+                card.style.order = 'unset';
+            });
+            grid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            counter.innerText = '';
+            return;
+        }
+
+        let matchCount = 0;
+
+        booksData.forEach(book => {
+            const titleMatch = this.normalizeText(book.title).includes(normalizedQuery);
+            const authorMatch = this.normalizeText(book.author).includes(normalizedQuery);
+            const summaryMatch = book.summary ? this.normalizeText(book.summary).includes(normalizedQuery) : false;
+
+            let score = 0;
+            if (titleMatch) score += 3;
+            else if (authorMatch) score += 2;
+            else if (summaryMatch) score += 1;
+
+            const card = [...cards].find(c => c.querySelector('h3').innerText === book.title);
+            if (score > 0 && card) {
+                card.classList.remove('search-hidden');
+                card.style.order = -score; // Rank by score
+                this.highlightText(card, query);
+                matchCount++;
+            } else if (card) {
+                card.classList.add('search-hidden');
+            }
+        });
+
+        counter.innerText = matchCount > 0 ? `${matchCount} نتيجة تم العثور عليها` : '';
+
+        if (matchCount === 0) {
+            grid.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+        } else {
+            grid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            this.addToHistory(query);
+        }
+    },
+
+    highlightText: function (card, query) {
+        const titleEl = card.querySelector('h3');
+        const authorEl = card.querySelector('p');
+        const regex = new RegExp(`(${query})`, 'gi');
+
+        titleEl.innerHTML = titleEl.innerText.replace(regex, '<mark class="highlight">$1</mark>');
+        authorEl.innerHTML = authorEl.innerText.replace(regex, '<mark class="highlight">$1</mark>');
+    },
+
+    showSuggestions: function (query) {
+        const suggestions = document.getElementById('search-suggestions');
+        if (!query || query.length < 2) {
+            suggestions.classList.add('hidden');
+            return;
+        }
+
+        const normalizedQuery = this.normalizeText(query);
+        const matches = booksData.filter(b =>
+            this.normalizeText(b.title).includes(normalizedQuery) ||
+            this.normalizeText(b.author).includes(normalizedQuery)
+        ).slice(0, 5);
+
+        if (matches.length > 0) {
+            suggestions.innerHTML = matches.map(b => `
+                <div class="suggestion-item" onclick="document.getElementById('library-search-input').value='${b.title}'; searchEngine.performSearch('${b.title}');">
+                    <span class="s-icon">📖</span>
+                    <span class="s-title">${b.title}</span>
+                    <span class="s-type">${this.translateType(b.category)}</span>
+                </div>`
+            ).join('');
+            suggestions.classList.remove('hidden');
+        } else {
+            suggestions.classList.add('hidden');
+        }
+    },
+
+    translateType: function (cat) {
+        const map = { 'Literature': 'أدب', 'Psychology': 'علم نفس', 'Philosophy': 'فلسفة', 'History': 'تاريخ', 'Self Development': 'تطوير ذات' };
+        return map[cat] || cat;
+    },
+
+    addToHistory: function (query) {
+        if (!query || query.length < 3) return;
+        this.history = [query, ...this.history.filter(q => q !== query)].slice(0, 5);
+        localStorage.setItem('search_history', JSON.stringify(this.history));
+    },
+
+    showHistory: function () {
+        const suggestions = document.getElementById('search-suggestions');
+        const label = document.getElementById('search-history-label');
+
+        if (this.history.length > 0) {
+            suggestions.innerHTML = this.history.map(q => `
+                <div class="suggestion-item" onclick="document.getElementById('library-search-input').value='${q}'; searchEngine.performSearch('${q}');">
+                    <span class="s-icon">🕒</span>
+                    <span class="s-title">${q}</span>
+                </div>`
+            ).join('');
+            suggestions.classList.remove('hidden');
+            if (label) label.classList.remove('hidden');
+        }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function () {
     try {
         ui.init();
-
+        auth.getInteractions();
+        searchEngine.init();
         // Auth check
         const user = auth.getCurrentUser();
         if (user) {
