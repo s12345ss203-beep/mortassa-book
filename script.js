@@ -3,6 +3,69 @@ let storiesData = [];
 let ideasData = [];
 let novelsData = [];
 
+// --- 1.0 UTILITIES (Search Engine) ---
+const searchEngine = {
+    normalize: function (text) {
+        if (!text) return "";
+        return String(text).toLowerCase()
+            .replace(/[آأإ]/g, "ا")
+            .replace(/ة/g, "ه")
+            .replace(/ى/g, "ي")
+            // Remove common Arabic diacritics
+            .replace(/[\u064B-\u0652]/g, "")
+            .replace(/[^\w\s\u0600-\u06FF]/g, "") // Remove punctuation
+            .replace(/\s+/g, " ") // Collapse spaces
+            .trim();
+    },
+
+    search: function (data, query) {
+        const normQuery = this.normalize(query);
+        if (!normQuery) return data;
+
+        const scored = data.map(item => {
+            let score = 0;
+            const normTitle = this.normalize(item.title);
+            const normAuthor = this.normalize(item.author);
+            const normSummary = this.normalize(item.summary || "");
+
+            // Exact match (highest)
+            if (normTitle === normQuery) score += 100;
+            if (normAuthor === normQuery) score += 80;
+
+            // Partial match - Starts with
+            if (normTitle.indexOf(normQuery) === 0) score += 50;
+            if (normAuthor.indexOf(normQuery) === 0) score += 40;
+
+            // Partial match - Includes
+            if (normTitle.includes(normQuery)) score += 20;
+            if (normAuthor.includes(normQuery)) score += 15;
+            if (normSummary.includes(normQuery)) score += 5;
+
+            return { ...item, _score: score };
+        });
+
+        return scored
+            .filter(item => item._score > 0)
+            .sort((a, b) => b._score - a._score);
+    },
+
+    highlight: function (text, query) {
+        if (!query || !text) return text;
+        const normQuery = this.normalize(query);
+        if (!normQuery) return text;
+
+        try {
+            // Find matched ranges of the NORMALIZED text in the original text
+            // This is harder than it looks with Arabic variations, so we'll start with a simpler approach
+            const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex = new RegExp(`(${escapedQuery})`, 'gi');
+            return String(text).replace(regex, '<mark class="search-highlight">$1</mark>');
+        } catch (e) {
+            return text;
+        }
+    }
+};
+
 // --- 1.1 DATA (Books) ---
 const booksData = [
     {
@@ -218,19 +281,19 @@ const auth = {
     getCurrentUser: function () {
         try {
             const user = localStorage.getItem(this.STORAGE_KEY);
-            return user ? JSON.parse(user) : null;
+            if (user) return JSON.parse(user);
+
+            // Default "Visitor" state for first visit
+            // English: Return a visitor object if no account is found
+            // Iraqi Arabic: نرجع كائن "زائر" إذا ماكو حساب مسجل دخول
+            return { username: 'زائر', isVisitor: true, myLibrary: [] };
         } catch (e) {
             console.error("Auth: Error localizing user", e);
-            return null;
+            return { username: 'زائر', isVisitor: true, myLibrary: [] };
         }
     },
     setUser: function (user) {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(user));
-    },
-    loginAsGuest: function () {
-        const guest = { id: 'g' + Date.now(), username: 'ضيف', isGuest: true, myLibrary: [] };
-        this.setUser(guest);
-        return guest;
     },
     createAccount: function (username, password, personaIndex = null) {
         const user = {
@@ -360,6 +423,255 @@ const ui = {
             const btn = e.target.closest('.primary-btn, .secondary-btn, .cat-btn, .tab-btn, .save-btn');
             if (btn) this.createRipple(e, btn);
         });
+
+        this.initSearch();
+        this.initLoginPrompt();
+    },
+
+    initLoginPrompt: function () {
+        const modal = document.getElementById('login-popup-modal');
+        const closeBtn = document.getElementById('close-popup');
+        const loginBtn = document.getElementById('go-to-login');
+
+        if (closeBtn) closeBtn.onclick = () => this.hideLoginPrompt();
+        if (loginBtn) {
+            loginBtn.onclick = () => {
+                this.hideLoginPrompt();
+                this.switchView('intro');
+            };
+        }
+        if (modal) {
+            modal.onclick = (e) => {
+                if (e.target === modal) this.hideLoginPrompt();
+            };
+        }
+    },
+
+    showLoginPrompt: function () {
+        const modal = document.getElementById('login-popup-modal');
+        const main = document.getElementById('main-view');
+        const nav = document.getElementById('main-nav');
+
+        if (modal) modal.classList.remove('hidden');
+        if (main) main.classList.add('main-blur-toggle');
+        if (nav) nav.classList.add('main-blur-toggle');
+
+        // Prevent scrolling when prompt is active
+        document.body.style.overflow = 'hidden';
+    },
+
+    hideLoginPrompt: function () {
+        const modal = document.getElementById('login-popup-modal');
+        const main = document.getElementById('main-view');
+        const nav = document.getElementById('main-nav');
+
+        if (modal) modal.classList.add('hidden');
+        if (main) main.classList.remove('main-blur-toggle');
+        if (nav) nav.classList.remove('main-blur-toggle');
+
+        document.body.style.overflow = '';
+    },
+
+    initSearch: function () {
+        const searchInput = document.getElementById('library-search-input');
+        const clearBtn = document.getElementById('clear-search');
+        if (!searchInput) return;
+
+        let debounceTimer;
+        searchInput.oninput = () => {
+            const query = searchInput.value.trim();
+            clearBtn.classList.toggle('hidden', !query);
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                this.performSearch(query);
+            }, 300);
+        };
+
+        clearBtn.onclick = () => {
+            searchInput.value = '';
+            clearBtn.classList.add('hidden');
+            this.performSearch('');
+            searchInput.focus();
+        };
+
+        searchInput.onfocus = () => {
+            this.showSearchHistory();
+        };
+
+        searchInput.onkeydown = (e) => {
+            if (document.getElementById('search-suggestions').classList.contains('hidden')) return;
+            this.handleKeyboardNavigation(e);
+        };
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                document.getElementById('search-suggestions')?.classList.add('hidden');
+                document.getElementById('search-history')?.classList.add('hidden');
+            }
+        });
+    },
+
+    handleKeyboardNavigation: function (e) {
+        const box = document.getElementById('search-suggestions');
+        const items = box.querySelectorAll('.suggestion-item');
+        if (items.length === 0) return;
+
+        let currentIndex = Array.from(items).findIndex(item => item.classList.contains('selected'));
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (currentIndex < items.length - 1) {
+                if (currentIndex >= 0) items[currentIndex].classList.remove('selected');
+                items[currentIndex + 1].classList.add('selected');
+                items[currentIndex + 1].scrollIntoView({ block: 'nearest' });
+            } else if (currentIndex === -1) {
+                items[0].classList.add('selected');
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (currentIndex > 0) {
+                items[currentIndex].classList.remove('selected');
+                items[currentIndex - 1].classList.add('selected');
+                items[currentIndex - 1].scrollIntoView({ block: 'nearest' });
+            }
+        } else if (e.key === 'Enter') {
+            if (currentIndex >= 0) {
+                e.preventDefault();
+                items[currentIndex].click();
+            }
+        } else if (e.key === 'Escape') {
+            box.classList.add('hidden');
+        }
+    },
+
+    performSearch: function (query) {
+        const suggestionsBox = document.getElementById('search-suggestions');
+        const historyBox = document.getElementById('search-history');
+        const resultsInfo = document.getElementById('search-results-info');
+        const resultsCountSpan = document.getElementById('results-count');
+
+        if (!query) {
+            suggestionsBox.classList.add('hidden');
+            resultsInfo.classList.add('hidden');
+            this.renderGrid('book-grid', 'All');
+            return;
+        }
+
+        historyBox.classList.add('hidden');
+        this.saveToHistory(query);
+
+        const results = searchEngine.search(booksData, query);
+
+        // Show/Update Suggestions
+        this.renderSuggestions(results.slice(0, 5), query);
+
+        // Update Grid
+        this.renderSearchResults(results, query);
+
+        // Update Info
+        resultsInfo.classList.remove('hidden');
+        resultsCountSpan.innerText = results.length;
+    },
+
+    renderSearchResults: function (results, query) {
+        const grid = document.getElementById('book-grid');
+        grid.innerHTML = '';
+
+        if (results.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-search-state">
+                    <span class="empty-icon">🔍</span>
+                    <h3>لا توجد نتائج لـ "${query}"</h3>
+                    <p>جرّب كلمات مفتاحية أخرى أو تحقق من الإملاء.</p>
+                    <button class="reset-search-btn" onclick="ui.resetSearch()">كل الكتب</button>
+                </div>
+            `;
+            return;
+        }
+
+        results.forEach(book => {
+            const status = statusConfig[book.status] || statusConfig.not_finished;
+            const highlightedTitle = searchEngine.highlight(book.title, query);
+            const highlightedAuthor = searchEngine.highlight(book.author, query);
+
+            const card = document.createElement('div');
+            card.className = 'book-card';
+            card.innerHTML = `
+                <div class="image-container">
+                    <img src="${book.cover}" alt="${book.title}" loading="lazy" 
+                         onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
+                </div>
+                <div class="book-info">
+                    <h3>${highlightedTitle}</h3>
+                    <p>${highlightedAuthor}</p>
+                    <span class="status-badge ${status.class}">${status.text}</span>
+                </div>
+            `;
+            card.onclick = () => this.showDetails(book);
+            grid.appendChild(card);
+        });
+    },
+
+    renderSuggestions: function (topResults, query) {
+        const box = document.getElementById('search-suggestions');
+        if (topResults.length === 0) {
+            box.classList.add('hidden');
+            return;
+        }
+
+        box.innerHTML = topResults.map(book => `
+            <div class="suggestion-item" onclick="ui.selectSuggestion(${book.id})">
+                <div class="suggestion-content">
+                    <span class="suggestion-title">${searchEngine.highlight(book.title, query)}</span>
+                    <span class="suggestion-author">${book.author}</span>
+                </div>
+            </div>
+        `).join('');
+        box.classList.remove('hidden');
+    },
+
+    selectSuggestion: function (bookId) {
+        const book = booksData.find(b => b.id === bookId);
+        if (book) {
+            this.showDetails(book);
+            document.getElementById('search-suggestions').classList.add('hidden');
+        }
+    },
+
+    resetSearch: function () {
+        const input = document.getElementById('library-search-input');
+        input.value = '';
+        document.getElementById('clear-search').classList.add('hidden');
+        this.performSearch('');
+    },
+
+    saveToHistory: function (query) {
+        let history = JSON.parse(localStorage.getItem('search_history') || '[]');
+        history = [query, ...history.filter(h => h !== query)].slice(0, 5);
+        localStorage.setItem('search_history', JSON.stringify(history));
+    },
+
+    showSearchHistory: function () {
+        const input = document.getElementById('library-search-input');
+        if (input.value.trim()) return;
+
+        const history = JSON.parse(localStorage.getItem('search_history') || '[]');
+        const box = document.getElementById('search-history');
+
+        if (history.length === 0) {
+            box.classList.add('hidden');
+            return;
+        }
+
+        box.innerHTML = history.map(h => `
+            <div class="history-item" onclick="document.getElementById('library-search-input').value='${h}'; ui.performSearch('${h}')">
+                <span class="history-icon">🕒</span>
+                <span>${h}</span>
+            </div>
+        `).join('');
+        box.classList.remove('hidden');
     },
 
     createRipple: function (e, btn) {
@@ -402,9 +714,15 @@ const ui = {
 
         this.updateFABVisibility();
 
+        // English: Disable scroll behavior on login (intro) page to prevent unwanted shifts
+        // Iraqi Arabic: نلغي السكرول بصفحة البداية (اللوكن) حتى لا تصير حركات مو مرغوبة
+        if (viewName === 'intro') {
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Restore scroll and ensure visibility
+            document.body.style.overflow = '';
+        }
 
-        // Restore scroll and ensure visibility
-        document.body.style.overflow = '';
         window.scrollTo({ top: 0, behavior: 'instant' });
     },
 
@@ -799,13 +1117,22 @@ const ui = {
             }
         };
 
-        if (trigger) trigger.onclick = () => toggleSidebar(true);
+        if (trigger) {
+            trigger.onclick = () => {
+                const updatedUser = auth.getCurrentUser();
+                if (updatedUser.isVisitor) {
+                    this.showLoginPrompt();
+                } else {
+                    toggleSidebar(true);
+                }
+            };
+        }
         if (closeBtn) closeBtn.onclick = () => toggleSidebar(false);
         if (overlay) overlay.onclick = () => toggleSidebar(false);
 
         const savedBtn = this.nav.querySelector('[data-view="privateLibrary"]');
         if (savedBtn) {
-            if (user && !user.isGuest) savedBtn.style.display = 'block';
+            if (user && !user.isVisitor) savedBtn.style.display = 'block';
             else savedBtn.style.display = 'none';
         }
 
@@ -1013,8 +1340,15 @@ const ui = {
                 e.preventDefault();
                 e.stopPropagation();
 
-                const action = item.dataset.action;
-                this.openAddContentModal(action);
+                const user = auth.getCurrentUser();
+                // English: If visitor, show login prompt. Otherwise, open modal.
+                // Iraqi Arabic: إذا زائر، نطلع رسالة تسجيل الدخول. وإذا لا، نفتح مودال الإضافة.
+                if (user.isVisitor) {
+                    this.showLoginPrompt();
+                } else {
+                    const action = item.dataset.action;
+                    this.openAddContentModal(action);
+                }
             };
         });
         this.updateFABVisibility();
@@ -1027,7 +1361,9 @@ const ui = {
         const user = auth.getCurrentUser();
         const currentView = Object.keys(this.views).find(k => !this.views[k].classList.contains('hidden'));
 
-        if (user && currentView !== 'intro') {
+        // English: FAB is always visible except on intro screen
+        // Iraqi Arabic: الزر العائم دائماً طالع إلا بشاشة الدخول
+        if (currentView !== 'intro') {
             fab.classList.remove('hidden');
         } else {
             fab.classList.add('hidden');
@@ -1378,233 +1714,21 @@ const ui = {
 };
 
 // --- 4. INITIALIZATION ---
-
-// --- 4. SAAS SEARCH SYSTEM LOGIC ---
-const searchEngine = {
-    debounceTimer: null,
-    history: JSON.parse(localStorage.getItem('search_history') || '[]'),
-
-    init: function () {
-        const input = document.getElementById('library-search-input');
-        const suggestions = document.getElementById('search-suggestions');
-        const clearBtn = document.getElementById('clear-search-btn');
-
-        if (!input) return;
-
-        input.oninput = () => {
-            clearTimeout(this.debounceTimer);
-            const query = input.value;
-            this.debounceTimer = setTimeout(() => this.performSearch(query), 300);
-            this.showSuggestions(query);
-        };
-
-        input.onfocus = () => {
-            if (!input.value && this.history.length > 0) {
-                this.showHistory();
-            }
-        };
-
-        // Close suggestions on outside click
-        document.addEventListener('click', (e) => {
-            if (!input.contains(e.target) && !suggestions.contains(e.target)) {
-                suggestions.classList.add('hidden');
-            }
-        });
-
-
-        this.selectedIndex = -1;
-
-        input.onkeydown = (e) => {
-            const items = suggestions.querySelectorAll('.suggestion-item');
-            if (suggestions.classList.contains('hidden') || items.length === 0) return;
-
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                this.selectedIndex = (this.selectedIndex + 1) % items.length;
-                this.updateSelection(items);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                this.selectedIndex = (this.selectedIndex - 1 + items.length) % items.length;
-                this.updateSelection(items);
-            } else if (e.key === 'Enter') {
-                if (this.selectedIndex > -1) {
-                    e.preventDefault();
-                    items[this.selectedIndex].click();
-                }
-            } else if (e.key === 'Escape') {
-                suggestions.classList.add('hidden');
-            }
-        };
-
-        if (clearBtn) {
-            clearBtn.onclick = () => {
-                input.value = '';
-                this.performSearch('');
-            };
-        }
-    },
-
-    updateSelection: function (items) {
-        items.forEach((item, index) => {
-            if (index === this.selectedIndex) {
-                item.classList.add('selected');
-                item.scrollIntoView({ block: 'nearest' });
-            } else {
-                item.classList.remove('selected');
-            }
-        });
-    },
-
-    normalizeText: function (text) {
-        if (!text) return '';
-        return text.toLowerCase()
-            .replace(/[إأآا]/g, 'ا')
-            .replace(/[ىي]/g, 'ي')
-            .replace(/[ةه]/g, 'ه')
-            .replace(/[^\w\s\u0621-\u064A]/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-    },
-
-    performSearch: function (query) {
-        const normalizedQuery = this.normalizeText(query);
-        const grid = document.getElementById('book-grid');
-        const cards = grid.querySelectorAll('.book-card');
-        const emptyState = document.getElementById('search-empty-state');
-        const counter = document.getElementById('search-counter');
-
-        if (!normalizedQuery) {
-            cards.forEach(card => {
-                card.classList.remove('search-hidden');
-                // Reset highlighting
-                const titleEl = card.querySelector('h3');
-                const authorEl = card.querySelector('p');
-                titleEl.innerHTML = titleEl.innerText;
-                authorEl.innerHTML = authorEl.innerText;
-                card.style.order = 'unset';
-            });
-            grid.classList.remove('hidden');
-            emptyState.classList.add('hidden');
-            counter.innerText = '';
-            return;
-        }
-
-        let matchCount = 0;
-
-        booksData.forEach(book => {
-            const titleMatch = this.normalizeText(book.title).includes(normalizedQuery);
-            const authorMatch = this.normalizeText(book.author).includes(normalizedQuery);
-            const summaryMatch = book.summary ? this.normalizeText(book.summary).includes(normalizedQuery) : false;
-
-            let score = 0;
-            if (titleMatch) score += 3;
-            else if (authorMatch) score += 2;
-            else if (summaryMatch) score += 1;
-
-            const card = [...cards].find(c => c.querySelector('h3').innerText === book.title);
-            if (score > 0 && card) {
-                card.classList.remove('search-hidden');
-                card.style.order = -score; // Rank by score
-                this.highlightText(card, query);
-                matchCount++;
-            } else if (card) {
-                card.classList.add('search-hidden');
-            }
-        });
-
-        counter.innerText = matchCount > 0 ? `${matchCount} نتيجة تم العثور عليها` : '';
-
-        if (matchCount === 0) {
-            grid.classList.add('hidden');
-            emptyState.classList.remove('hidden');
-        } else {
-            grid.classList.remove('hidden');
-            emptyState.classList.add('hidden');
-            this.addToHistory(query);
-        }
-    },
-
-    highlightText: function (card, query) {
-        const titleEl = card.querySelector('h3');
-        const authorEl = card.querySelector('p');
-        const regex = new RegExp(`(${query})`, 'gi');
-
-        titleEl.innerHTML = titleEl.innerText.replace(regex, '<mark class="highlight">$1</mark>');
-        authorEl.innerHTML = authorEl.innerText.replace(regex, '<mark class="highlight">$1</mark>');
-    },
-
-    showSuggestions: function (query) {
-        const suggestions = document.getElementById('search-suggestions');
-        if (!query || query.length < 2) {
-            suggestions.classList.add('hidden');
-            return;
-        }
-
-        const normalizedQuery = this.normalizeText(query);
-        const matches = booksData.filter(b =>
-            this.normalizeText(b.title).includes(normalizedQuery) ||
-            this.normalizeText(b.author).includes(normalizedQuery)
-        ).slice(0, 5);
-
-        if (matches.length > 0) {
-            suggestions.innerHTML = matches.map(b => `
-                <div class="suggestion-item" onclick="document.getElementById('library-search-input').value='${b.title}'; searchEngine.performSearch('${b.title}');">
-                    <span class="s-icon">📖</span>
-                    <span class="s-title">${b.title}</span>
-                    <span class="s-type">${this.translateType(b.category)}</span>
-                </div>`
-            ).join('');
-            suggestions.classList.remove('hidden');
-        } else {
-            suggestions.classList.add('hidden');
-        }
-    },
-
-    translateType: function (cat) {
-        const map = { 'Literature': 'أدب', 'Psychology': 'علم نفس', 'Philosophy': 'فلسفة', 'History': 'تاريخ', 'Self Development': 'تطوير ذات' };
-        return map[cat] || cat;
-    },
-
-    addToHistory: function (query) {
-        if (!query || query.length < 3) return;
-        this.history = [query, ...this.history.filter(q => q !== query)].slice(0, 5);
-        localStorage.setItem('search_history', JSON.stringify(this.history));
-    },
-
-    showHistory: function () {
-        const suggestions = document.getElementById('search-suggestions');
-        const label = document.getElementById('search-history-label');
-
-        if (this.history.length > 0) {
-            suggestions.innerHTML = this.history.map(q => `
-                <div class="suggestion-item" onclick="document.getElementById('library-search-input').value='${q}'; searchEngine.performSearch('${q}');">
-                    <span class="s-icon">🕒</span>
-                    <span class="s-title">${q}</span>
-                </div>`
-            ).join('');
-            suggestions.classList.remove('hidden');
-            if (label) label.classList.remove('hidden');
-        }
-    }
-};
-
 document.addEventListener('DOMContentLoaded', function () {
     try {
         ui.init();
-        auth.getInteractions();
-        searchEngine.init();
-        // Auth check
-        const user = auth.getCurrentUser();
-        if (user) {
-            ui.updateNavbar();
-            ui.initNewFAB();
-            ui.initModals();
-            ui.switchView('home');
-            // Ensure nav state on reload
-            if (window.scrollY > 20) ui.nav.classList.add('scrolled');
-        } else {
-            ui.switchView('intro');
-        }
+
+        // English: Always initialize UI components and show home screen directly
+        // Iraqi Arabic: دائماً نشغل مكونات الواجهة ونعرض الصفحة الرئيسية مباشرة
+        ui.updateNavbar();
+        ui.initNewFAB();
+        ui.initModals();
+
+        // Handle "Visitor" or logged in user by showing home directly
+        ui.switchView('home');
+
+        // Ensure nav state on reload
+        if (window.scrollY > 20) ui.nav.classList.add('scrolled');
 
         // Populate Persona Select with Safety
         const personaSelect = document.getElementById('persona-select');
@@ -1666,13 +1790,6 @@ document.addEventListener('DOMContentLoaded', function () {
             };
         }
 
-        if (guestBtn) {
-            guestBtn.onclick = () => {
-                auth.loginAsGuest();
-                ui.updateNavbar();
-                ui.switchView('home');
-            };
-        }
 
         if (submitAuthBtn) {
             submitAuthBtn.onclick = () => {

@@ -25,8 +25,6 @@
             <!-- Step 1: Initial Selection -->
             <div id="auth-selection" class="auth-box">
                 <button id="show-auth-form" class="primary-btn">تسجيل الدخول / إنشاء حساب</button>
-                <div class="divider">أو</div>
-                <button id="guest-login" class="secondary-btn">الدخول كضيف</button>
             </div>
 
             <!-- Step 2: Auth Form (Initially Hidden) -->
@@ -80,24 +78,24 @@
         <section id="library-view" class="view-container hidden">
             <div class="container">
                 <h2 class="section-title">المكتبة العامة</h2>
-
-                <!-- SaaS-Level Search System -->
-                <div class="search-container-wrapper" id="library-search-wrapper">
-                    <div class="search-bar-glass">
-                        <div class="search-icon-wrapper">
-                            <svg viewBox="0 0 24 24" class="search-svg">
+                <div class="search-container animate-fade-down">
+                    <div class="search-wrapper">
+                        <div class="search-icon">
+                            <svg viewBox="0 0 24 24">
                                 <path
                                     d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                             </svg>
                         </div>
-                        <input type="text" id="library-search-input" placeholder="ابحث عن عنوان، مؤلف، أو موضوع..."
+                        <input type="text" id="library-search-input" placeholder="ابحث عن كتاب، مؤلف، أو موضوع..."
                             autocomplete="off">
-                        <div id="search-suggestions" class="suggestions-dropdown hidden"></div>
+                        <button id="clear-search" class="clear-btn hidden">&times;</button>
                     </div>
-                    <div class="search-info-bar">
-                        <div id="search-counter" class="result-counter"></div>
-                        <div id="search-history-label" class="history-label hidden">عمليات البحث الأخيرة</div>
-                    </div>
+                    <div id="search-suggestions" class="suggestions-dropdown hidden"></div>
+                    <div id="search-history" class="history-dropdown hidden"></div>
+                </div>
+
+                <div id="search-results-info" class="search-results-info hidden">
+                    <span id="results-count">0</span> نتائج وجدت
                 </div>
 
                 <div class="category-filters" id="library-filters">
@@ -105,12 +103,6 @@
                 </div>
                 <div class="book-grid" id="book-grid">
                     <!-- Books injected by JS -->
-                </div>
-                <!-- Empty State -->
-                <div id="search-empty-state" class="empty-state-container hidden">
-                    <div class="empty-illustration">🔍</div>
-                    <h3>لا توجد نتائج مطابقة</h3>
-                    <p>جرب كلمات بحث مختلفة أو <button id="clear-search-btn" class="text-link">مسح الفلتر</button></p>
                 </div>
             </div>
         </section>
@@ -271,6 +263,22 @@
             <div data-action="add-idea">إضافة فكرة عامة</div>
         </div>
         <button class="fab">+</button>
+    </div>
+
+    <!-- Login Prompt Popup (New) -->
+    <!-- English: Popup for non-logged-in users trying to perform protected actions -->
+    <!-- Iraqi Arabic: بوپ-أپ للمستخدمين الما مسجلين دخول من يحاولون يسوون أشياء محظورة -->
+    <div id="login-popup-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel login-prompt-modal">
+            <div class="popup-icon" style="font-size: 3rem; margin-bottom: 20px;">🔒</div>
+            <h2 style="color: white; margin-bottom: 10px;">يجب تسجيل الدخول</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 25px; line-height: 1.6;">
+                للإضافة أو تصفح الملف الشخصي، يرجى الدخول إلى حسابك أولاً.
+            </p>
+            <button id="go-to-login" class="primary-btn" style="width: 100%; margin-bottom: 10px;">تسجيل الدخول</button>
+            <button id="close-popup" class="text-btn"
+                style="background:none; border:none; color:var(--text-secondary); cursor:pointer;">إغلاق</button>
+        </div>
     </div>
 
     <!-- Scripts -->

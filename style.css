@@ -24,6 +24,12 @@
     --glass-border: rgba(255, 255, 255, 0.08);
     --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
     --shadow-glow: 0 0 20px rgba(88, 166, 255, 0.3);
+
+    /* Premium Background Variables */
+    --accent-glow: rgba(88, 166, 255, 0.08);
+    /* Soft blue for radial glows - لون ازرق ناعم للتوهجات */
+    --bg-animate-speed: 20s;
+    /* Very slow for premium feel - سرعة جداً بطيئة للمسة فخمة */
 }
 
 * {
@@ -41,6 +47,54 @@ body {
     direction: rtl;
     text-align: right;
     scroll-behavior: smooth;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* 
+   English: Main Background Layers - CSS Only
+   Iraqi Arabic: طبقات الخلفية الاساسية - شغل CSS فقط
+*/
+
+/* 
+   English: Animated Gradient Layer. Moves slowly in the background.
+   Iraqi Arabic: طبقة الالوان المتحركة، تتحرك بخفة وهدوء حتى تنطي حياة للموقع.
+*/
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background: radial-gradient(circle at 30% 20%, #161b22 0%, #0d1117 100%);
+    background-size: 150% 150%;
+    animation: mainGradientMove var(--bg-animate-speed) ease-in-out infinite alternate;
+}
+
+/* 
+   English: Subtle radial glows and slow-drifting pulse particle.
+   Iraqi Arabic: توهجات ناعمة وذرة ضوئية تتحرك ببطء حتى تعطي عمق للتصميم.
+*/
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background:
+        radial-gradient(circle at var(--glow-x, 20%) var(--glow-y, 30%), var(--accent-glow) 0%, transparent 40%),
+        radial-gradient(circle at 2px 2px, var(--accent) 0%, transparent 4px);
+    /* Tiny slow particle - ذرة ضوء صغيرة */
+    background-size: 100% 100%, 8px 8px;
+    background-repeat: no-repeat, no-repeat;
+    background-position: center, 10% 20%;
+    pointer-events: none;
+    opacity: 0.6;
+    animation: floatGlow 25s ease-in-out infinite alternate, particleDrift 40s linear infinite;
 }
 
 .container {
@@ -56,13 +110,17 @@ body {
 
 /* Intro Screen */
 .full-screen-intro {
-    height: 100vh;
+    height: 100dvh;
+    /* use dvh for modern mobile viewport handling */
     display: flex;
     align-items: center;
     justify-content: center;
     background: radial-gradient(circle at center, #161b22 0%, #0d1117 100%);
     text-align: center;
+    overflow: hidden;
+    /* safety lock */
 }
+
 
 .intro-content h1 {
     font-size: 3.5rem;
@@ -795,6 +853,206 @@ nav.scrolled .nav-container {
     background: var(--accent);
     color: white;
     transform: scale(1.1);
+    box-shadow: var(--shadow-glow);
+}
+
+/* Intelligent Search System Styles */
+.search-container {
+    max-width: 700px;
+    margin: 0 auto 30px;
+    position: relative;
+    z-index: 100;
+}
+
+.search-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2px 15px;
+    transition: var(--transition-smooth);
+    box-shadow: var(--shadow-premium);
+}
+
+.search-wrapper:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2), var(--shadow-glow);
+    transform: translateY(-2px);
+}
+
+.search-icon {
+    width: 24px;
+    height: 24px;
+    fill: var(--text-secondary);
+    margin-left: 12px;
+    display: flex;
+    align-items: center;
+}
+
+#library-search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 15px 0;
+    font-size: 1.1rem;
+    font-family: inherit;
+    outline: none;
+}
+
+#library-search-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.clear-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: var(--text-secondary);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: var(--transition-fast);
+}
+
+.clear-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Suggestions & History Dropdowns */
+.suggestions-dropdown,
+.history-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: rgba(22, 27, 34, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    animation: fadeInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.suggestion-item,
+.history-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: var(--transition-fast);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.suggestion-item:last-child,
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected,
+.history-item:hover {
+    background: rgba(88, 166, 255, 0.1);
+    padding-right: 25px;
+}
+
+.suggestion-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.suggestion-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.suggestion-author {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.history-item .history-icon {
+    opacity: 0.5;
+    font-size: 0.9rem;
+}
+
+/* Search Info */
+.search-results-info {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+    animation: fadeIn 0.4s ease;
+}
+
+#results-count {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* Highlighting */
+mark.search-highlight {
+    background: rgba(88, 166, 255, 0.3);
+    color: white;
+    padding: 0 2px;
+    border-radius: 3px;
+    font-weight: 700;
+}
+
+/* Empty State */
+.empty-search-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    animation: fadeInUp 0.5s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.empty-search-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+.empty-search-state p {
+    color: var(--text-secondary);
+    margin-bottom: 25px;
+}
+
+.reset-search-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.reset-search-btn:hover {
+    background: var(--accent-hover);
+    transform: scale(1.05);
     box-shadow: var(--shadow-glow);
 }
 
@@ -1910,6 +2168,26 @@ main#main-view {
     transform: translateY(0);
 }
 
+/* Login Prompt Modal Styling (New) */
+.login-prompt-modal {
+    max-width: 400px !important;
+    padding: 40px !important;
+    border: 1px solid rgba(88, 166, 255, 0.3);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), var(--shadow-glow);
+}
+
+/* Background Blur Effect (New) */
+/* 
+   English: Applied to main-view and nav when login popup is active
+   Iراقي عربي: يتطبق على المحتوى من تطلع رسالة "يجب تسجيل الدخول" حتى تطلع بشكل أرتب
+*/
+.main-blur-toggle {
+    filter: blur(12px) saturate(150%);
+    pointer-events: none;
+    user-select: none;
+    transition: filter 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
 .close-modal-btn {
     position: absolute;
     top: 20px;
@@ -2591,6 +2869,7 @@ main#main-view {
     margin-left: 5px;
     color: #ffab00;
 }
+
 /* --- [NEW] SaaS Search System Styling --- */
 .search-container-wrapper {
     max-width: 800px;
@@ -2659,7 +2938,7 @@ main#main-view {
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 1000;
 }
@@ -2671,20 +2950,37 @@ main#main-view {
     display: flex;
     align-items: center;
     gap: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     color: var(--text-secondary);
 }
 
-.suggestion-item:last-child { border-bottom: none; }
+.suggestion-item:last-child {
+    border-bottom: none;
+}
 
-.suggestion-item:hover, .suggestion-item.selected {
+.suggestion-item:hover,
+.suggestion-item.selected {
     background: rgba(88, 166, 255, 0.1);
     color: white;
 }
 
-.suggestion-item .s-icon { opacity: 0.5; font-size: 1.1rem; }
-.suggestion-item .s-title { flex: 1; font-weight: 500; }
-.suggestion-item .s-type { font-size: 0.75rem; color: var(--accent); padding: 2px 8px; background: rgba(88, 166, 255, 0.1); border-radius: 4px; }
+.suggestion-item .s-icon {
+    opacity: 0.5;
+    font-size: 1.1rem;
+}
+
+.suggestion-item .s-title {
+    flex: 1;
+    font-weight: 500;
+}
+
+.suggestion-item .s-type {
+    font-size: 0.75rem;
+    color: var(--accent);
+    padding: 2px 8px;
+    background: rgba(88, 166, 255, 0.1);
+    border-radius: 4px;
+}
 
 /* Info Bar */
 .search-info-bar {
@@ -2756,3 +3052,159 @@ mark.highlight {
     display: none !important;
 }
 
+
+/* --- [NEW] Hero \u0026 Landing Page Styling --- */
+.full-screen-intro {
+    position: relative;
+    overflow: hidden;
+}
+
+.intro-content {
+    width: 100%;
+    max-width: 1000px;
+    padding: 20px;
+    z-index: 2;
+}
+
+.hero-container {
+    animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: center;
+}
+
+.hero-badge {
+    display: inline-block;
+    padding: 8px 20px;
+    background: rgba(var(--accent-rgb), 0.1);
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    border-radius: 50px;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+    letter-spacing: 1px;
+}
+
+.hero-container h1 {
+    font-size: 4.5rem;
+    line-height: 1.1;
+    margin-bottom: 25px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.hero-container p {
+    font-size: 1.4rem;
+    max-width: 700px;
+    margin: 0 auto 40px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.glow-btn {
+    padding: 18px 45px !important;
+    font-size: 1.2rem !important;
+    border-radius: 50px !important;
+    box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.glow-btn::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+    transform: scale(0);
+    transition: transform 0.6s ease;
+}
+
+.glow-btn:hover::after {
+    transform: scale(1);
+}
+
+.hero-note {
+    margin-top: 20px;
+    font-size: 0.9rem !important;
+    opacity: 0.6;
+    color: var(--text-secondary) !important;
+}
+
+.scale-in {
+    animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Responsiveness for Hero */
+@media (max-width: 768px) {
+    .hero-container h1 {
+        font-size: 3rem;
+    }
+
+    .hero-container p {
+        font-size: 1.1rem;
+    }
+}
+
+/* 
+   English: Background Animation Keyframes
+   Iraqi Arabic: حركات الانميشن الخاصة بالخلفية
+*/
+
+/* Moves the main background gradient - يحرك تدرج الوان الخلفية */
+@keyframes mainGradientMove {
+    0% {
+        background-position: 0% 0%;
+    }
+
+    100% {
+        background-position: 100% 100%;
+    }
+}
+
+/* Floating effect for radial glows - تأثير الطفو للتوهجات الزرقاء */
+@keyframes floatGlow {
+    0% {
+        opacity: 0.4;
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: translate(2%, 2%) scale(1.05);
+    }
+
+    100% {
+        opacity: 0.5;
+        transform: translate(-1%, 3%) scale(0.95);
+    }
+}
+
+/* Very slow particle movement - حركة الذرات الضوئية جداً بطيئة */
+@keyframes particleDrift {
+    0% {
+        background-position: center, 10% 20%;
+    }
+
+    50% {
+        background-position: center, 80% 60%;
+    }
+
+    100% {
+        background-position: center, 20% 90%;
+    }
+}
